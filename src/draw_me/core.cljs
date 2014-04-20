@@ -73,7 +73,6 @@
                  mouse-up-chan ([pos] (do
                                         (om/set-state! owner :record-mouse false)
                                         (reset-mouse-positions data)
-                                        #_(om/refresh! owner)
                                         )))))))
     om/IDidUpdate
     (did-update [_ _ _]
@@ -90,8 +89,7 @@
                                 :style #js {:border  "1px solid black"}
                                 :ref "draw-loop-ref"
                                 :onMouseDown #(do
-                                                (om/set-state! owner :record-mouse true)
-                                                )})))))
+                                                (om/set-state! owner :record-mouse true))})))))
 
 
 (defn line-history [data owner]
