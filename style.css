@@ -6,3 +6,12 @@
 #draw-loop {
     float: left;
 }
+
+.clearfix {
+    clear: both;
+}
+
+#time-loop {
+    float: left;
+    margin-left: 40px;
+}
