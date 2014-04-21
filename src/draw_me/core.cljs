@@ -12,13 +12,11 @@
 (def app-state (atom {:text "Hell worlds!"
                       :complete-lines []
                       :in-progress-line []
-                      :frames 15
                       :time-loop {:width 600
-                                  :height 200}
+                                  :height 200
+                                  :seconds 5}
+                      :frame 0
                       :initial-time nil}))
-
-(def render-every-n
-  (/ 1000 40))
 
 (defn record-mouse [data owner pos]
   (when (om/get-state owner :record-mouse)
@@ -38,7 +36,6 @@
        :mouse-positions []})
     om/IDidMount
     (did-mount [_]
-      #_(draw-lines data owner "draw-loop-ref")
       (let [c-mouse (om/get-state owner :c-mouse)
             mouse-move-chan (async/map
                              (fn [e-data]
@@ -56,16 +53,9 @@
                                         (om/set-state! owner :record-mouse false)
                                         (reset-mouse-positions data)
                                         )))))))
-    om/IDidUpdate
-    (did-update [_ _ _]
-      (when (not (empty? (:in-progress-line data)))
-        (utils/draw-lines data owner :in-progress-line  (om/get-node owner "draw-loop-ref")))
-      #_(when (last (:complete-lines data))
-        (utils/draw-lines data owner :complete-lines  (om/get-node owner "draw-loop-ref"))))
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/div nil (str (:frames data) " " "Frames"))
                (dom/canvas #js {:id "draw-loop"
                                 :height 400
                                 :width 400
@@ -78,26 +68,16 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:c-time (chan)
-       :c-loop (chan)
+      {:c-loop (chan)
        :time-pos 0})
-    om/IWillMount
-    (will-mount [_]
-      (let [c-time (om/get-state owner :c-time)
-            total-frames (* 40 (:frames data))]
-        (do
-          (om/transact! data :initial-time #(.getTime (new js/Date)))
-          (. js/window (setInterval (fn [e]
-                                      (let [time-pos (om/get-state owner :time-pos)]
-                                        (if (= time-pos
-                                               total-frames)
-                                          (om/set-state! owner :time-pos 0)
-                                          (om/set-state! owner :time-pos (inc time-pos))
-                                          
-                                          )
-                                        
-                                        (put! c-time time-pos))
-                                      ) render-every-n)))))
+    om/IDidMount
+    (did-mount [_]
+      (let [tick (fn tick []
+                   (om/transact! data :frame (fn [i] (if (= i 499)
+                                                      0
+                                                      (inc i))))
+                   (js/requestAnimationFrame tick))]        
+        (tick)))
     om/IRender
     (render [_]
       (let [c-time (om/get-state owner :c-time)]
@@ -112,8 +92,3 @@
   {:target (. js/document (getElementById "app"))})
 
 
-#_(defn testRAF []
-  (.log js/console (.getTime (new js/Date)))
-  (js/requestAnimationFrame testRAF))
-
-#_(testRAF)

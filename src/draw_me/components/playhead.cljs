@@ -8,25 +8,24 @@
 (defn draw-nav-time [data owner ref head-pos]
   (let [canvas (om/get-node owner ref)
         width (get-in data [:time-loop :width])
-        height (get-in data [:time-loop :height])]
-    
+        height (get-in data [:time-loop :height])]    
     (utils/clear-canvas canvas width height)
     (utils/canvas-draw canvas head-pos 0 2 height)))
 
 (defn time-loop [data owner]
   (reify
-    om/IWillMount
-    (will-mount [_]
-      (let [c-time (om/get-state owner :c-time)]
-        (go (while true (let [val (<! c-time)]
-                          (om/set-state! owner :head val))))))
     om/IDidUpdate
     (did-update [_ _ _]
-      (draw-nav-time data owner "time-loop-ref" (* (/ (get-in data [:time-loop :width])
-                                                      (* (:frames data) 40)) (om/get-state owner :head))))
+      (let [width (get-in data [:time-loop :width])
+            total-frames (* (get-in data [:time-loop :seconds])
+                            100)
+            frame-width (/ width total-frames)
+            head-position (* frame-width (:frame data))]
+          (draw-nav-time data owner "time-loop-ref" head-position)))
     om/IRender
     (render [_]
       (dom/div nil
+               (dom/div nil (get-in data [:frame]))
                (dom/canvas #js {:id "time-loop"
                                 :height (get-in data [:time-loop :height])
                                 :width (get-in data [:time-loop :width])
