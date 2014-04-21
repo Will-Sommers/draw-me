@@ -18,10 +18,12 @@
                       :frame 0
                       :initial-time nil}))
 
-(defn record-mouse [data owner pos]
-  (when (om/get-state owner :record-mouse)
-    (utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos pos) (:y-pos pos) 2 2)
-    (om/transact! data :in-progress-line #(conj % pos))))
+(defn record-mouse [data owner event]
+  (let [event (assoc event :timestamp (- (:timestamp event) (:initial-time @data)))]
+      (when (om/get-state owner :record-mouse)
+        (utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos event) (:y-pos event) 2 2)
+        (println event)
+        (om/transact! data :in-progress-line #(conj % event)))))
 
 (defn reset-mouse-positions [data]
   (om/transact! data :complete-lines #(conj % {:mouse-positions (:in-progress-line @data)
@@ -77,9 +79,7 @@
     om/IDidMount
     (did-mount [_]
       (let [tick (fn tick []
-                   (om/transact! data :frame (fn [i] (if (= i 499)
-                                                      0
-                                                      (inc i))))
+                   (om/transact! data :frame inc)
                    (js/requestAnimationFrame tick))]        
         (om/transact! data :initial-time utils/timestamp)
         (tick)))

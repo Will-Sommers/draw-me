@@ -17,15 +17,18 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (let [width (get-in data [:time-loop :width])
-            total-frames (* (get-in data [:time-loop :seconds])
-                            100)
-            frame-width (/ width total-frames)
-            head-position (* frame-width (:frame data))]
-          (draw-nav-time data owner "time-loop-ref" head-position)))
+            milliseconds (* (get-in data [:time-loop :seconds])
+                            1000)
+            frame-width (/ width milliseconds)
+            current-time (mod (- (utils/timestamp) (:initial-time data))
+                      milliseconds)
+            head-position (* frame-width current-time)
+            ]
+        
+        (draw-nav-time data owner "time-loop-ref" head-position)))
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/div nil (get-in data [:frame]))
                (dom/canvas #js {:id "time-loop"
                                 :height (get-in data [:time-loop :height])
                                 :width (get-in data [:time-loop :width])
