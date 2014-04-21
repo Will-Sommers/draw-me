@@ -5,18 +5,10 @@
             [om.dom :as dom :include-macros true]
             [draw-me.components.history :as history]
             [draw-me.components.playhead :as playhead]
-            [draw-me.utils :as utils]))
+            [draw-me.utils :as utils]
+            [draw-me.app-state :as app-state]))
 
 (enable-console-print!)
-
-(def app-state (atom {:text "Hell worlds!"
-                      :complete-lines []
-                      :in-progress-line []
-                      :time-loop {:width 600
-                                  :height 200
-                                  :seconds 5}
-                      :frame 0
-                      :initial-time nil}))
 
 (defn record-mouse [data owner event]
   (let [event (assoc event :timestamp (- (:timestamp event) (:initial-time @data)))]
@@ -93,7 +85,7 @@
 
 (om/root
   app
-  app-state
+  app-state/app-state
   {:target (. js/document (getElementById "app"))})
 
 

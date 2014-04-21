@@ -11,5 +11,6 @@ goog.addDependency("../draw_me/utils.js", ['draw_me.utils'], ['cljs.core', 'goog
 goog.addDependency("../om/dom.js", ['om.dom'], ['cljs.core']);
 goog.addDependency("../om/core.js", ['om.core'], ['cljs.core', 'om.dom']);
 goog.addDependency("../draw_me/components/history.js", ['draw_me.components.history'], ['cljs.core', 'om.core', 'om.dom']);
+goog.addDependency("../draw_me/app_state.js", ['draw_me.app_state'], ['cljs.core']);
 goog.addDependency("../draw_me/components/playhead.js", ['draw_me.components.playhead'], ['cljs.core', 'om.core', 'draw_me.utils', 'om.dom', 'cljs.core.async']);
-goog.addDependency("../draw_me/core.js", ['draw_me.core'], ['cljs.core', 'om.core', 'draw_me.utils', 'draw_me.components.history', 'om.dom', 'draw_me.components.playhead', 'cljs.core.async']);
+goog.addDependency("../draw_me/core.js", ['draw_me.core'], ['cljs.core', 'om.core', 'draw_me.utils', 'draw_me.app_state', 'draw_me.components.history', 'om.dom', 'draw_me.components.playhead', 'cljs.core.async']);
