@@ -11,10 +11,9 @@
 (enable-console-print!)
 
 (defn record-mouse [data owner event]
-  (let [event (assoc event :timestamp (- (:timestamp event) (:initial-time @data)))]
+  (let [event (assoc event :timestamp (- (:timestamp event)
+                                         (:initial-time @data)))]
       (when (om/get-state owner :record-mouse)
-        (utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos event) (:y-pos event) 2 2)
-        (println event)
         (om/transact! data :in-progress-line #(conj % event)))))
 
 (defn reset-mouse-positions [data]
@@ -70,11 +69,29 @@
        :time-pos 0})
     om/IDidMount
     (did-mount [_]
+      
       (let [tick (fn tick []
-                   (om/transact! data :frame inc)
+                   #_(utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos event) (:y-pos event) 2 2)
+                   (om/transact! data :current-millisecond utils/timestamp)
                    (js/requestAnimationFrame tick))]        
         (om/transact! data :initial-time utils/timestamp)
         (tick)))
+    om/IDidUpdate
+    (did-update [_ _ _]
+      (let [t (om/get-state owner :last-millisecond)]
+        (println [(utils/time->delta data (:current-millisecond data)) (utils/time->delta data t)]))
+      (when (> (om/get-state owner :last-millisecond)
+               (:current-millisecond data))
+        (println "Test"))
+      (let [delta (utils/time->delta data)]
+        (om/set-state! owner :last-millisecond (utils/timestamp))
+        )
+      (let [lines (:complete-lines data)]        
+        (doseq [line lines]
+          (let [positions (:mouse-positions line)]
+            (doseq [point positions]
+              (utils/canvas-draw (. js/document (getElementById "draw-loop")) (:x-pos point) (:y-pos point) 2 2))))
+        ))
     om/IRender
     (render [_]
       (let [c-time (om/get-state owner :c-time)]

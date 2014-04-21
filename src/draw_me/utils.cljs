@@ -17,7 +17,7 @@
 (defn canvas-draw [canvas x y x-length y-length]
   (let [context (. canvas (getContext "2d"))]
     (set! (.-fillStyle context) "#000000")
-    ;; TODO figure out the exact offset 
+    ;; TODO figure out the exact offset
     (.fillRect context x y x-length y-length)))
 
 (defn draw-lines [data owner sym-name dom-node-ref]
@@ -30,3 +30,7 @@
 (defn clear-canvas [canvas w h]
   (let [context (. canvas (getContext "2d"))]
     (.clearRect context 0 0 w h)))
+
+(defn time->delta [data t]
+  (mod (- t (:initial-time data))
+       (* (get-in data [:time-loop :seconds]) 1000)))
