@@ -28,6 +28,12 @@
                                                :index (inc (count %))}))
   (om/update! data :in-progress-line []))
 
+(defn event->hash [e]
+  (hash-map
+   :timestamp (:timestamp e)
+   :x-pos (.-clientX (:event e))
+   :y-pos (.-clientY (:event e))))
+
 (defn draw-canvas [data owner]
   (reify
     om/IInitState
@@ -38,12 +44,10 @@
     (did-mount [_]
       (let [c-mouse (om/get-state owner :c-mouse)
             mouse-move-chan (async/map
-                             (fn [e-data]
-                               (do
-                                 (hash-map :timestamp (:timestamp e-data)  :x-pos (.-clientX (:event e-data)) :y-pos (.-clientY (:event e-data)))))
+                             (fn [e] (event->hash e))
                              [(utils/listen (. js/document (getElementById "draw-loop")) "mousemove")])
             mouse-up-chan (async/map
-                           (fn [e-data] (hash-map :timestamp (:timestamp e-data)  :x-pos (.-clientX (:event e-data)) :y-pos (.-clientY (:event e-data))))
+                           (fn [e] (event->hash e))
                            [(utils/listen (. js/document (getElementById "draw-loop")) "mouseup")])
             ]
         (go (while true
@@ -77,6 +81,7 @@
                                                       0
                                                       (inc i))))
                    (js/requestAnimationFrame tick))]        
+        (om/transact! data :initial-time utils/timestamp)
         (tick)))
     om/IRender
     (render [_]

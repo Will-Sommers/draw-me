@@ -4,11 +4,14 @@
             [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]])
   (:import [goog.events EventType]))
 
+(defn timestamp []
+  (.getTime (new js/Date)))
+
 (defn listen [el type]
   (let [out (chan)]
     (events/listen el type (fn [event]
                              (.preventDefault event)
-                             (put! out (hash-map :event event :timestamp (.getTime (new js/Date))))))
+                             (put! out (hash-map :event event :timestamp (timestamp)))))
     out))
 
 (defn canvas-draw [canvas x y x-length y-length]
