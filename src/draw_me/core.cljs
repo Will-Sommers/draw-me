@@ -82,7 +82,7 @@
     (did-update [_ _ _]
       (when (not (empty? (:in-progress-line data)))
         (draw-lines data owner :in-progress-line "draw-loop-ref"))
-      (when (last (:complete-lines data))
+      #_(when (last (:complete-lines data))
         (draw-lines data owner :complete-lines "draw-loop-ref")))
     om/IRender
     (render [_]
@@ -161,6 +161,7 @@
                                       (let [time-pos (om/get-state owner :time-pos)]
                                         (if (= time-pos
                                                total-frames)
+                                          ()
                                           (om/set-state! owner :time-pos 0)
                                           (om/set-state! owner :time-pos (inc time-pos))
                                           )
@@ -179,3 +180,10 @@
   app
   app-state
   {:target (. js/document (getElementById "app"))})
+
+
+#_(defn testRAF []
+  (.log js/console (.getTime (new js/Date)))
+  (js/requestAnimationFrame testRAF))
+
+#_(testRAF)
