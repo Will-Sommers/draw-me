@@ -13,7 +13,8 @@
                       :in-progress-line []
                       :frames 15
                       :time-loop {:width 600
-                                  :height 200}}))
+                                  :height 200}
+                      :initial-time nil}))
 
 (def fps 40)
 
@@ -24,7 +25,7 @@
   (let [out (chan)]
     (events/listen el type (fn [event]
                              (.preventDefault event)
-                             (put! out event)))
+                             (put! out (hash-map :event event :timestamp (.getTime (new js/Date))))))
     out))
 
 (defn canvas-draw [canvas x y x-length y-length]
@@ -38,11 +39,12 @@
     (doseq [x (->> (sym-name data)
                    last
                    (:mouse-positions))]
-      (canvas-draw canvas (first x) (second x) 2 2))))
+      (canvas-draw canvas (:x-pos x) (:y-pos x) 2 2))))
 
 (defn record-mouse [data owner pos]
   (when (om/get-state owner :record-mouse)
-    (canvas-draw (om/get-node owner "draw-loop-ref") (first pos) (second pos) 2 2)
+    (canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos pos) (:y-pos pos) 2 2)
+    (.log js/console (:timestamp pos))
     (om/transact! data :in-progress-line #(conj % pos))))
 
 (defn reset-mouse-positions [data]
@@ -61,10 +63,12 @@
       #_(draw-lines data owner "draw-loop-ref")
       (let [c-mouse (om/get-state owner :c-mouse)
             mouse-move-chan (async/map
-                             (fn [e] [(.-clientX e) (.-clientY e)])
+                             (fn [e-data]
+                               (do
+                                 (hash-map :timestamp (:timestamp e-data)  :x-pos (.-clientX (:event e-data)) :y-pos (.-clientY (:event e-data)))))
                              [(listen (. js/document (getElementById "draw-loop")) "mousemove")])
             mouse-up-chan (async/map
-                           (fn [e] [(.-clientX e) (.-clientY e)])
+                           (fn [e-data] (hash-map :timestamp (:timestamp e-data)  :x-pos (.-clientX (:event e-data)) :y-pos (.-clientY (:event e-data))))
                            [(listen (. js/document (getElementById "draw-loop")) "mouseup")])
             ]
         (go (while true
@@ -76,7 +80,8 @@
                                         )))))))
     om/IDidUpdate
     (did-update [_ _ _]
-      (draw-lines data owner :in-progress-line "draw-loop-ref")
+      (when (not (empty? (:in-progress-line data)))
+        (draw-lines data owner :in-progress-line "draw-loop-ref"))
       (when (last (:complete-lines data))
         (draw-lines data owner :complete-lines "draw-loop-ref")))
     om/IRender
@@ -138,7 +143,7 @@
                                 :width (get-in data [:time-loop :width])
                                 :style #js {:border "1px solid black"}
                                 :ref "time-loop-ref"})))))
-x
+
 (defn app [data owner]
   (reify
     om/IInitState
@@ -150,16 +155,18 @@ x
     (will-mount [_]
       (let [c-time (om/get-state owner :c-time)
             total-frames (* fps (:frames data))]
-        (. js/window (setInterval (fn [e]
-                                    (let [time-pos (om/get-state owner :time-pos)]
-                                      (if (= time-pos
-                                             total-frames)
-                                        (om/set-state! owner :time-pos 0)
-                                        (om/set-state! owner :time-pos (inc time-pos))
-                                        )
-                                      
-                                      (put! c-time time-pos))
-                                    ) render-every-n))))
+        (do
+          (om/transact! data :initial-time #(.getTime (new js/Date)))
+          (. js/window (setInterval (fn [e]
+                                      (let [time-pos (om/get-state owner :time-pos)]
+                                        (if (= time-pos
+                                               total-frames)
+                                          (om/set-state! owner :time-pos 0)
+                                          (om/set-state! owner :time-pos (inc time-pos))
+                                          )
+                                        
+                                        (put! c-time time-pos))
+                                      ) render-every-n)))))
     om/IRender
     (render [_]
       (let [c-time (om/get-state owner :c-time)]
@@ -172,6 +179,3 @@ x
   app
   app-state
   {:target (. js/document (getElementById "app"))})
-
-
-
