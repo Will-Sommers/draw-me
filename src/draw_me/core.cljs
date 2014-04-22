@@ -22,11 +22,14 @@
   (om/update! data :in-progress-line []))
 
 (defn event->hash [e]
-  (.log js/console (:event e))
   (hash-map
    :timestamp (:timestamp e)
    :x-pos (.-offsetX (:event e))
    :y-pos (.-offsetY (:event e)))) 
+
+(defn drawing-time-bound [position current-millisecond total-milliseconds]
+  (let [tail-lifetime 500]
+    (> current-millisecond (mod (:timestamp position) total-milliseconds)  (- current-millisecond tail-lifetime))))
 
 (defn draw-canvas [data owner]
   (reify
@@ -57,29 +60,25 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (om/set-state! owner :last-millisecond (utils/timestamp))
-      (let [current-milli (utils/time->delta data (:current-millisecond data))
-            past-milli  (utils/time->delta data (om/get-state owner :last-millisecond))
-            lines (:complete-lines data)
+      (let [current-millisecond (utils/time->delta data (:current-millisecond data))
+            completed-lines (:complete-lines data)
             total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)
-            tail-lifetime 500]
+            currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds) (:in-progress-line data))]
         
-        (utils/clear-canvas (om/get-node owner "draw-loop-ref") 400 400)
+        (utils/clear-canvas! (om/get-node owner "draw-loop-ref") 400 400)
+        
+        (doseq [completed-line completed-lines]
+          (let [positions (:mouse-positions completed-line)
+                draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds) positions)
+                to-draw (concat draw-positions currently-drawing-pos)]
 
-        (doseq [line lines]
-          (let [positions (:mouse-positions line)
-                draw-positions (filter (fn [position]
-                                         (and (> current-milli (mod (:timestamp position) total-milliseconds))
-                                              (> (mod (:timestamp position) total-milliseconds) (- current-milli tail-lifetime)))) positions)]
-            
-            (doseq [point draw-positions]
-              (utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 2 2)
-              #_(utils/clear-canvas (om/get-node owner "draw-loop-ref") 400 400)))))
-      )
+            (doseq [point to-draw]
+              (utils/canvas-draw! (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 2 2))))))
     
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/canvas #js {:className "draw-loop"
+               (dom/canvas #js {:id "draw-loop"
                                 :height 400
                                 :width 400
                                 :style #js {:border  "1px solid black"}

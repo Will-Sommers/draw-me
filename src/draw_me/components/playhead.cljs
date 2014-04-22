@@ -9,8 +9,8 @@
   (let [canvas (om/get-node owner ref)
         width (get-in data [:time-loop :width])
         height (get-in data [:time-loop :height])]    
-    (utils/clear-canvas canvas width height)
-    (utils/canvas-draw canvas head-pos 0 2 height)))
+    (utils/clear-canvas! canvas width height)
+    (utils/canvas-draw! canvas head-pos 0 2 height)))
 
 (defn time-loop [data owner]
   (reify
