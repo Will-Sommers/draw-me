@@ -5,7 +5,7 @@
                       :in-progress-line []
                       :time-loop {:width 600
                                   :height 200
-                                  :seconds 2}
+                                  :seconds 4}
                       :frame 0
                       :initial-time 10
                       :previous-millisecond 0

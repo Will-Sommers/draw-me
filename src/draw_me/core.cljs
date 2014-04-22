@@ -78,20 +78,22 @@
         (tick)))
     om/IDidUpdate
     (did-update [_ _ _]
-      (let [t (om/get-state owner :last-millisecond)]
-        (println [(utils/time->delta data (:current-millisecond data)) (utils/time->delta data t)]))
-      (when (> (om/get-state owner :last-millisecond)
-               (:current-millisecond data))
-        (println "Test"))
-      (let [delta (utils/time->delta data)]
-        (om/set-state! owner :last-millisecond (utils/timestamp))
-        )
-      (let [lines (:complete-lines data)]        
+      (om/set-state! owner :last-millisecond (utils/timestamp))
+      (let [current-milli (utils/time->delta data (:current-millisecond data))
+            past-milli  (utils/time->delta data (om/get-state owner :last-millisecond))
+            lines (:complete-lines data)
+            total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)]
+        (utils/clear-canvas (. js/document (getElementById "draw-loop")) 400 400)
         (doseq [line lines]
-          (let [positions (:mouse-positions line)]
-            (doseq [point positions]
-              (utils/canvas-draw (. js/document (getElementById "draw-loop")) (:x-pos point) (:y-pos point) 2 2))))
-        ))
+          (let [positions (:mouse-positions line)
+                draw-positions (filter (fn [position]
+                                         (and (> current-milli (mod (:timestamp position) total-milliseconds))
+                                              (> (mod (:timestamp position) total-milliseconds) (- current-milli 500)))) positions)]
+            (println draw-positions)
+            (doseq [point draw-positions]
+              (utils/canvas-draw (. js/document (getElementById "draw-loop")) (:x-pos point) (:y-pos point) 2 2)
+              #_(utils/clear-canvas (. js/document (getElementById "draw-loop")) 400 400)))))
+      )
     om/IRender
     (render [_]
       (let [c-time (om/get-state owner :c-time)]
