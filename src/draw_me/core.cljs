@@ -22,26 +22,29 @@
   (om/update! data :in-progress-line []))
 
 (defn event->hash [e]
+  (.log js/console (:event e))
   (hash-map
    :timestamp (:timestamp e)
-   :x-pos (.-clientX (:event e))
-   :y-pos (.-clientY (:event e))))
+   :x-pos (.-offsetX (:event e))
+   :y-pos (.-offsetY (:event e)))) 
 
 (defn draw-canvas [data owner]
   (reify
+    
     om/IInitState
     (init-state [_]
       {:c-mouse (chan)
        :mouse-positions []})
+    
     om/IDidMount
     (did-mount [_]
       (let [c-mouse (om/get-state owner :c-mouse)
             mouse-move-chan (async/map
                              (fn [e] (event->hash e))
-                             [(utils/listen (. js/document (getElementById "draw-loop")) "mousemove")])
+                             [(utils/listen (om/get-node owner "draw-loop-ref") "mousemove")])
             mouse-up-chan (async/map
                            (fn [e] (event->hash e))
-                           [(utils/listen (. js/document (getElementById "draw-loop")) "mouseup")])
+                           [(utils/listen (om/get-node owner "draw-loop-ref") "mouseup")])
             ]
         (go (while true
                 (alt!
@@ -50,10 +53,33 @@
                                         (om/set-state! owner :record-mouse false)
                                         (reset-mouse-positions data)
                                         )))))))
+
+    om/IDidUpdate
+    (did-update [_ _ _]
+      (om/set-state! owner :last-millisecond (utils/timestamp))
+      (let [current-milli (utils/time->delta data (:current-millisecond data))
+            past-milli  (utils/time->delta data (om/get-state owner :last-millisecond))
+            lines (:complete-lines data)
+            total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)
+            tail-lifetime 500]
+        
+        (utils/clear-canvas (om/get-node owner "draw-loop-ref") 400 400)
+
+        (doseq [line lines]
+          (let [positions (:mouse-positions line)
+                draw-positions (filter (fn [position]
+                                         (and (> current-milli (mod (:timestamp position) total-milliseconds))
+                                              (> (mod (:timestamp position) total-milliseconds) (- current-milli tail-lifetime)))) positions)]
+            
+            (doseq [point draw-positions]
+              (utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 2 2)
+              #_(utils/clear-canvas (om/get-node owner "draw-loop-ref") 400 400)))))
+      )
+    
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/canvas #js {:id "draw-loop"
+               (dom/canvas #js {:className "draw-loop"
                                 :height 400
                                 :width 400
                                 :style #js {:border  "1px solid black"}
@@ -63,37 +89,20 @@
 
 (defn app [data owner]
   (reify
+    
     om/IInitState
     (init-state [_]
       {:c-loop (chan)
        :time-pos 0})
+    
     om/IDidMount
     (did-mount [_]
-      
       (let [tick (fn tick []
-                   #_(utils/canvas-draw (om/get-node owner "draw-loop-ref") (:x-pos event) (:y-pos event) 2 2)
                    (om/transact! data :current-millisecond utils/timestamp)
                    (js/requestAnimationFrame tick))]        
         (om/transact! data :initial-time utils/timestamp)
         (tick)))
-    om/IDidUpdate
-    (did-update [_ _ _]
-      (om/set-state! owner :last-millisecond (utils/timestamp))
-      (let [current-milli (utils/time->delta data (:current-millisecond data))
-            past-milli  (utils/time->delta data (om/get-state owner :last-millisecond))
-            lines (:complete-lines data)
-            total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)]
-        (utils/clear-canvas (. js/document (getElementById "draw-loop")) 400 400)
-        (doseq [line lines]
-          (let [positions (:mouse-positions line)
-                draw-positions (filter (fn [position]
-                                         (and (> current-milli (mod (:timestamp position) total-milliseconds))
-                                              (> (mod (:timestamp position) total-milliseconds) (- current-milli 500)))) positions)]
-            (println draw-positions)
-            (doseq [point draw-positions]
-              (utils/canvas-draw (. js/document (getElementById "draw-loop")) (:x-pos point) (:y-pos point) 2 2)
-              #_(utils/clear-canvas (. js/document (getElementById "draw-loop")) 400 400)))))
-      )
+    
     om/IRender
     (render [_]
       (let [c-time (om/get-state owner :c-time)]
@@ -102,9 +111,16 @@
                  (om/build history/history-viewer (:complete-lines data))
                  (om/build playhead/time-loop data {:init-state {:c-time c-time}}))))))
 
+
 (om/root
   app
   app-state/app-state
   {:target (. js/document (getElementById "app"))})
+
+;;
+;;#_(add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))
+;; ! for side-effecting functions
+
+
 
 
