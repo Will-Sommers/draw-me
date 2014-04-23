@@ -4,6 +4,10 @@
             [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]])
   (:import [goog.events EventType]))
 
+(defn slope [x y x1 y1]
+  (/ (- y1 y)
+     (- x1 x)))
+
 (defn timestamp []
   (.getTime (new js/Date)))
 
