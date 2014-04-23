@@ -6,18 +6,22 @@
             [draw-me.components.history :as history]
             [draw-me.components.playhead :as playhead]
             [draw-me.utils :as utils]
-            [draw-me.app-state :as app-state]))
+            [draw-me.app-state :as app-state]
+            [draw-me.mouse :as mouse]))
 
 (enable-console-print!)
 
 (defn record-mouse [data owner event]
   (let [event (assoc event :timestamp (- (:timestamp event)
                                          (:initial-time @data)))]
-      (when (om/get-state owner :record-mouse)
-        (om/transact! data :in-progress-line #(conj % event)))))
+    (om/update! data :mouse-position {:x-pos (:x-pos event)  :y-pos (:y-pos event)})
+    (when (om/get-state owner :record-mouse)
+      (om/transact! data :in-progress-line #(conj % event)))))
 
 (defn reset-mouse-positions [data]
   (om/transact! data :complete-lines #(conj % {:mouse-positions (:in-progress-line @data)
+                                               :index (inc (count %))}))
+  (om/transact! data :selected-lines #(conj % {:mouse-positions (:in-progress-line @data)
                                                :index (inc (count %))}))
   (om/update! data :in-progress-line []))
 
@@ -28,8 +32,18 @@
    :y-pos (.-offsetY (:event e)))) 
 
 (defn drawing-time-bound [position current-millisecond total-milliseconds]
-  (let [tail-lifetime 500]
-    (> current-millisecond (mod (:timestamp position) total-milliseconds)  (- current-millisecond tail-lifetime))))
+  (let [tail-lifetime 500
+        time-floor (- current-millisecond tail-lifetime)]
+    (if (< time-floor 0)
+      (let [real-time-floor (+ total-milliseconds time-floor)]
+        
+        (or  (> current-millisecond (mod (:timestamp position) total-milliseconds) 0)
+             (> current-millisecond (mod (:timestamp position) total-milliseconds) real-time-floor)))
+      (if (> (+ tail-lifetime time-floor) (- total-milliseconds tail-lifetime))
+        (let [add-on-front (js/Math.abs (- time-floor (- total-milliseconds tail-lifetime)))]
+          (or (> add-on-front (mod (:timestamp position) total-milliseconds) time-floor)
+              (> current-millisecond (mod (:timestamp position) total-milliseconds) time-floor)))
+        (> current-millisecond (mod (:timestamp position) total-milliseconds) time-floor)))))
 
 (defn draw-canvas [data owner]
   (reify
@@ -61,7 +75,7 @@
     (did-update [_ _ _]
       (om/set-state! owner :last-millisecond (utils/timestamp))
       (let [current-millisecond (utils/time->delta data (:current-millisecond data))
-            completed-lines (:complete-lines data)
+            completed-lines (:selected-lines data)
             total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)
             currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds) (:in-progress-line data))]
         
@@ -107,8 +121,9 @@
       (let [c-time (om/get-state owner :c-time)]
         (dom/div nil
                  (om/build draw-canvas data)
-                 (om/build history/history-viewer (:complete-lines data))
-                 (om/build playhead/time-loop data {:init-state {:c-time c-time}}))))))
+                 (om/build history/history-viewer data)
+                 (om/build playhead/time-loop data)
+                 (om/build mouse/mouse-position (:mouse-position data)))))))
 
 
 (om/root
@@ -117,7 +132,8 @@
   {:target (. js/document (getElementById "app"))})
 
 ;;
-;;#_(add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))
+;; (add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))
+
 ;; ! for side-effecting functions
 
 
