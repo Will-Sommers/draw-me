@@ -9,5 +9,4 @@
     om/IRender
     (render [_]
       (dom/div nil 
-               (dom/div nil (str (:x-pos data) ", " (:y-pos data)))
-               (dom/div nil "Test")))))
+               (dom/div nil (str (:x-pos data) ", " (:y-pos data)))))))

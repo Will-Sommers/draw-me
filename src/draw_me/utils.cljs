@@ -18,17 +18,17 @@
                              (put! out (hash-map :event event :timestamp (timestamp)))))
     out))
 
-(defn canvas-draw! [canvas x y x-length y-length]
+(defn canvas-draw! [color canvas x y x-length y-length]
   (let [context (. canvas (getContext "2d"))]
-    (set! (.-fillStyle context) "#000000")
+    (set! (.-fillStyle context) color)
     (.fillRect context x y x-length y-length)))
 
-(defn draw-lines! [data owner sym-name dom-node-ref]
+(defn draw-lines! [color data owner sym-name dom-node-ref]
   (let [canvas dom-node-ref]
     (doseq [x (->> (sym-name data)
                    last
                    (:mouse-positions))]
-      (canvas-draw! canvas (:x-pos x) (:y-pos x) 2 2))))
+      (canvas-draw! color canvas (:x-pos x) (:y-pos x) 2 2))))
 
 (defn clear-canvas! [canvas w h]
   (let [context (. canvas (getContext "2d"))]
@@ -38,3 +38,4 @@
 (defn time->delta [data t]
   (mod (- t (:initial-time data))
        (* (get-in data [:time-loop :seconds]) 1000)))
+

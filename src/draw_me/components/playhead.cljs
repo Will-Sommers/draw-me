@@ -8,9 +8,10 @@
 (defn draw-nav-time [data owner ref head-pos]
   (let [canvas (om/get-node owner ref)
         width (get-in data [:time-loop :width])
-        height (get-in data [:time-loop :height])]    
+        height (get-in data [:time-loop :height])
+        color "#000000"]    
     (utils/clear-canvas! canvas width height)
-    (utils/canvas-draw! canvas head-pos 0 2 height)))
+    (utils/canvas-draw! color canvas head-pos 0 2 height)))
 
 (defn time-loop [data owner]
   (reify
@@ -26,6 +27,7 @@
             ]
         
         (draw-nav-time data owner "time-loop-ref" head-position)))
+
     om/IRender
     (render [_]
       (dom/div nil
@@ -33,4 +35,5 @@
                                 :height (get-in data [:time-loop :height])
                                 :width (get-in data [:time-loop :width])
                                 :style #js {:border "1px solid black"}
-                                :ref "time-loop-ref"})))))
+                                :ref "time-loop-ref"})
+               ))))
