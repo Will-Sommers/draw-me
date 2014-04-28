@@ -72,11 +72,12 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (om/set-state! owner :last-millisecond (utils/timestamp))
+
       (let [current-millisecond (utils/time->delta data (:current-millisecond data))
+            total-milliseconds (get-in data [:time-loop :total-milliseconds])
+            canvas (om/get-node owner "draw-loop-ref")
             completed-lines (filter :selected (:complete-lines data))
-            total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)
-            currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))
-            canvas (om/get-node owner "draw-loop-ref")]
+            currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
         
         (utils/clear-canvas! canvas 400 400)
         
@@ -95,8 +96,6 @@
     
     om/IRender
     (render [_]
-      (if (= 3 (count (:complete-lines data)))
-                     (println data))
       (dom/div nil
                (dom/canvas #js {:id "draw-loop"
                                 :height 400

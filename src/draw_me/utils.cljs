@@ -40,5 +40,5 @@
 
 (defn time->delta [data t]
   (mod (- t (:initial-time data))
-       (* (get-in data [:time-loop :seconds]) 1000)))
+       (get-in data [:time-loop :total-milliseconds])))
 

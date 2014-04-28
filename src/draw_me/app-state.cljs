@@ -6,7 +6,7 @@
                       :selected-line []
                       :time-loop {:width 600
                                   :height 200
-                                  :seconds 1
+                                  :total-milliseconds 2000
                                   :tail-in-milliseconds 500}
                       :initial-time 0
                       :current-millisecond 0
