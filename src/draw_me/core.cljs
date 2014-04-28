@@ -76,23 +76,17 @@
       (let [current-millisecond (utils/time->delta data)
             total-milliseconds (get-in data [:time-loop :total-milliseconds])
             canvas (om/get-node owner "draw-loop-ref")
-            completed-lines (filter :selected (:complete-lines data))
+            selected-lines (filter :selected (:complete-lines data))
             currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
         
         (utils/clear-canvas! canvas 400 400)
         
-        (if (not (empty? completed-lines))
-          (doseq [completed-line completed-lines]
-            (let [positions (:mouse-positions completed-line)
-                  draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) positions)
-                  to-draw (concat draw-positions currently-drawing-pos)]
-
-              (doseq [point to-draw]
-                (utils/point-draw! point canvas))))
-          (let [point-pairs (partition 2 1 currently-drawing-pos)]
-            (doseq [points point-pairs]
-              (utils/point-draw! (first points) canvas)
-              (utils/point-draw! (last points) canvas))))))
+        (if (not (empty? selected-lines))
+          (doseq [completed-line selected-lines]
+            (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
+              (utils/slope-draw! draw-positions canvas)
+              (utils/slope-draw! currently-drawing-pos canvas)))
+          (utils/slope-draw! currently-drawing-pos canvas))))
     
     om/IRender
     (render [_]

@@ -4,9 +4,6 @@
             [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]])
   (:import [goog.events EventType]))
 
-(defn slope [x y x1 y1]
-  (/ (- y1 y)
-     (- x1 x)))
 
 (defn timestamp []
   (.getTime (new js/Date)))
@@ -17,6 +14,17 @@
                              (.preventDefault event)
                              (put! out (hash-map :event event :timestamp (timestamp)))))
     out))
+
+(defn slope-draw! [point-vec canvas]
+  (let [context (. canvas (getContext "2d"))
+        point-pairs (partition 2 1 point-vec)]
+    (.beginPath context)
+    (set! (.-strokeStyle context) "black")
+    (doseq [points point-pairs]
+      (let [p0 (first points)
+            p1 (second points)]
+        (.bezierCurveTo context (:x-pos p0) (:y-pos p0) (:x-pos p1) (:y-pos p1) (:x-pos p0) (:y-pos p0))
+        (.stroke context)))))
 
 (defn point-draw! [point canvas]
   (canvas-draw! (:color point) canvas (:x-pos point) (:y-pos point) 2 2))
