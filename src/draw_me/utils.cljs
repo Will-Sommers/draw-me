@@ -18,6 +18,9 @@
                              (put! out (hash-map :event event :timestamp (timestamp)))))
     out))
 
+(defn point-draw! [point canvas]
+  (canvas-draw! (:color point) canvas (:x-pos point) (:y-pos point) 2 2))
+
 (defn canvas-draw! [color canvas x y x-length y-length]
   (let [context (. canvas (getContext "2d"))]
     (set! (.-fillStyle context) color)

@@ -87,9 +87,11 @@
                   to-draw (concat draw-positions currently-drawing-pos)]
 
               (doseq [point to-draw]
-                (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5))))
-          (doseq [point currently-drawing-pos]
-            (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5)))))
+                (utils/point-draw! point canvas))))
+          (let [point-pairs (partition 2 1 currently-drawing-pos)]
+            (doseq [points point-pairs]
+              (utils/point-draw! (first points) canvas)
+              (utils/point-draw! (last points) canvas))))))
     
     om/IRender
     (render [_]
