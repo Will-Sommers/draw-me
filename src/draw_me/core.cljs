@@ -75,9 +75,10 @@
       (let [current-millisecond (utils/time->delta data (:current-millisecond data))
             completed-lines (filter :selected (:complete-lines data))
             total-milliseconds (* (get-in data [:time-loop :seconds]) 1000)
-            currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
+            currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))
+            canvas (om/get-node owner "draw-loop-ref")]
         
-        (utils/clear-canvas! (om/get-node owner "draw-loop-ref") 400 400)
+        (utils/clear-canvas! canvas 400 400)
         
         (if (not (empty? completed-lines))
           (doseq [completed-line completed-lines]
