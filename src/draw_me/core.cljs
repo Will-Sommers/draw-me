@@ -79,6 +79,9 @@
         
         (utils/clear-canvas! (om/get-node owner "draw-loop-ref") 400 400)
         ;; FIX THIS        
+
+        (doseq [point currently-drawing-pos]
+          (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5))
         (doseq [completed-line completed-lines]
           (let [positions (:mouse-positions completed-line)
                 draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) positions)
@@ -118,7 +121,7 @@
                (om/build history/history-viewer data)
                (om/build playhead/time-loop data)
                (om/build mouse/mouse-position (:mouse-position data))
-               (om/build draggable/draggable-window {:data data
+               #_(om/build draggable/draggable-window {:data data
                                                      :render-via ankha/inspector})))))
 
 
