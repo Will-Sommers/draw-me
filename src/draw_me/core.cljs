@@ -73,7 +73,7 @@
     (did-update [_ _ _]
       (om/set-state! owner :last-millisecond (utils/timestamp))
 
-      (let [current-millisecond (utils/time->delta data (:current-millisecond data))
+      (let [current-millisecond (utils/time->delta data)
             total-milliseconds (get-in data [:time-loop :total-milliseconds])
             canvas (om/get-node owner "draw-loop-ref")
             completed-lines (filter :selected (:complete-lines data))
