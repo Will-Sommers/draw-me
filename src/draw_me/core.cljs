@@ -78,17 +78,17 @@
             currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
         
         (utils/clear-canvas! (om/get-node owner "draw-loop-ref") 400 400)
-        ;; FIX THIS        
+        
+        (if (not (empty? completed-lines))
+          (doseq [completed-line completed-lines]
+            (let [positions (:mouse-positions completed-line)
+                  draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) positions)
+                  to-draw (concat draw-positions currently-drawing-pos)]
 
-        (doseq [point currently-drawing-pos]
-          (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5))
-        (doseq [completed-line completed-lines]
-          (let [positions (:mouse-positions completed-line)
-                draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) positions)
-                to-draw (concat draw-positions currently-drawing-pos)]
-
-            (doseq [point to-draw]
-              (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5))))))
+              (doseq [point to-draw]
+                (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5))))
+          (doseq [point currently-drawing-pos]
+            (utils/canvas-draw! (:color point) (om/get-node owner "draw-loop-ref") (:x-pos point) (:y-pos point) 5 5)))))
     
     om/IRender
     (render [_]
