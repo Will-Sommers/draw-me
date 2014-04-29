@@ -9,6 +9,7 @@
             [draw-me.utils :as utils]
             [draw-me.app-state :as app-state]
             [draw-me.mouse :as mouse]
+            [draw-me.edit :as edit]
             [ankha.core :as ankha]))
 
 (enable-console-print!)
@@ -75,11 +76,11 @@
 
       (let [current-millisecond (utils/time->delta data)
             total-milliseconds (get-in data [:time-loop :total-milliseconds])
-            canvas (om/get-node owner "draw-loop-ref")
+            canvas (om/get-node owner (str (get-in data [:canvas :name]) "-ref"))
             selected-lines (filter :selected (:complete-lines data))
             currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
         
-        (utils/clear-canvas! canvas 400 400)
+        (utils/clear-canvas! canvas (get-in data [:canvas :width]) (get-in data [:canvas :height]) 400)
         
         (if (not (empty? selected-lines))
           (doseq [completed-line selected-lines]
@@ -91,11 +92,11 @@
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/canvas #js {:id "draw-loop"
+               (dom/canvas #js {:id (get-in data [:canvas :name])
                                 :height 400
                                 :width 400
                                 :style #js {:border  "1px solid black"}
-                                :ref "draw-loop-ref"
+                                :ref (str (get-in data [:canvas :name]) "-ref")
                                 :onMouseDown #(do
                                                 (om/set-state! owner :record-mouse true))})))))
 
@@ -113,10 +114,12 @@
     om/IRender
     (render [_]
       (dom/div nil
+               (dom/div #js {:onClick #(println app-state/app-state)} "Print")
                (om/build draw-canvas data)
                (om/build history/history-viewer data)
                (om/build playhead/time-loop data)
                (om/build mouse/mouse-position (:mouse-position data))
+               (om/build edit/edit-line (:edit-line data))
                #_(om/build draggable/draggable-window {:data data
                                                      :render-via ankha/inspector})))))
 
@@ -133,11 +136,3 @@
 (init app-state/app-state)
 
 ;; (add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))
-
-
-
-;; ! for side-effecting functions
-
-
-
-

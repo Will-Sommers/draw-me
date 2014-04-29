@@ -17,6 +17,9 @@
 (defn select [data e]
   (om/transact! data :selected (fn [selected] (not selected))))
 
+(defn begin-edit [data]
+  (om/update! data :edit-line @data))
+
 (defn line-history [data owner]
   (reify
     
@@ -24,9 +27,10 @@
     (render [_]
       (let [selected-lines (om/get-state owner :selected)]
         (dom/div nil
-                 (dom/div nil (dom/div #js {:onClick #(select data %)
-                                            :style (history-item-style (:selected data))}
-                                       (str "Line " (:index data)))))))))
+                 (dom/span #js {:onClick #(select data %)
+                               :style (history-item-style (:selected data))}
+                          (str "Line " (:index data)))
+                 (dom/span #js {:onClick #(begin-edit data)} "Edit"))))))
 
 (defn history-viewer [data owner]
   (reify

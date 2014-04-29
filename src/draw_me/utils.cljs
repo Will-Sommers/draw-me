@@ -21,6 +21,7 @@
     (.beginPath context)
     (set! (.-strokeStyle context) "black")
     (doseq [points point-pairs]
+      #_(point-draw! (first points) canvas)
       (let [p0 (first points)
             p1 (second points)]
         (.bezierCurveTo context (:x-pos p0) (:y-pos p0) (:x-pos p1) (:y-pos p1) (:x-pos p0) (:y-pos p0))

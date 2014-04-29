@@ -3,10 +3,13 @@
 (def app-state (atom {:text "Hell worlds!"
                       :complete-lines []
                       :in-progress-line []
-                      :selected-line []
+                      :edit-line []
+                      :canvas {:width 400
+                               :height 400
+                               :name "draw-loop"}
                       :time-loop {:width 600
                                   :height 200
-                                  :total-milliseconds 2000
+                                  :total-milliseconds 1000
                                   :tail-in-milliseconds 500}
                       :initial-time 0
                       :current-millisecond 0
