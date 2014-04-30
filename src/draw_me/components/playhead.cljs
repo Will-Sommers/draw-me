@@ -18,8 +18,7 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (let [width (get-in data [:time-loop :width])
-            milliseconds (* (get-in data [:time-loop :seconds])
-                            1000)
+            milliseconds (get-in data [:time-loop :total-milliseconds])
             frame-width (/ width milliseconds)
             current-time (mod (- (utils/timestamp) (:initial-time data))
                       milliseconds)
