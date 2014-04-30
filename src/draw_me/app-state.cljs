@@ -1,7 +1,6 @@
 (ns draw-me.app-state)
 
-(def app-state (atom {:text "Hell worlds!"
-                      :complete-lines []
+(def app-state (atom {:complete-lines []
                       :in-progress-line []
                       :edit-line []
                       :canvas {:width 400
