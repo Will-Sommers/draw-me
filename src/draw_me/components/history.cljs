@@ -28,6 +28,8 @@
       (let [selected-lines (om/get-state owner :selected)]
         (dom/div nil
                  (dom/span #js {:onClick #(select data %)
+                                :onMouseEnter #(om/transact! data :hover (fn [hover] true))
+                                :onMouseLeave #(om/transact! data :hover (fn [hover] false))
                                :style (history-item-style (:selected data))}
                           (str "Line " (:index data)))
                  (dom/span #js {:onClick #(begin-edit data)} "Edit"))))))

@@ -14,7 +14,7 @@
                       :initial-time 0
                       :current-millisecond 0
                       :mouse-position {:x-pos 0 :y-pos 0}
-                      :palette {:color "#FF0000"}}))
+                      :palette {:color "#000000"}}))
 
 (def mock-state
   (atom

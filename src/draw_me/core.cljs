@@ -85,7 +85,9 @@
         (if (not (empty? selected-lines))
           (doseq [completed-line selected-lines]
             (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
-              (utils/slope-draw! draw-positions canvas)
+              (if (:hover completed-line)
+                (utils/slope-draw! draw-positions canvas "#FFEE00")
+                (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))
               (utils/slope-draw! currently-drawing-pos canvas)))
           (utils/slope-draw! currently-drawing-pos canvas))))
     
