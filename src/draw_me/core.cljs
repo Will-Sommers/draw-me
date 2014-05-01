@@ -6,6 +6,7 @@
             [draw-me.components.history :as history]
             [draw-me.components.playhead :as playhead]
             [draw-me.components.draggable :as draggable]
+            [draw-me.components.palette :as palette]
             [draw-me.utils :as utils]
             [draw-me.app-state :as app-state]
             [draw-me.mouse :as mouse]
@@ -86,7 +87,7 @@
           (doseq [completed-line selected-lines]
             (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
               (if (:hover completed-line)
-                (utils/slope-draw! draw-positions canvas "#FFEE00")
+                (utils/slope-draw! draw-positions canvas "#067300")
                 (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))
               (utils/slope-draw! currently-drawing-pos canvas)))
           (utils/slope-draw! currently-drawing-pos canvas))))
@@ -95,12 +96,11 @@
     (render [_]
       (dom/div nil
                (dom/canvas #js {:id (get-in data [:canvas :name])
-                                :height 400
-                                :width 400
+                                :height (get-in data [:canvas :height])
+                                :width (get-in data [:canvas :width])
                                 :style #js {:border  "1px solid black"}
                                 :ref (str (get-in data [:canvas :name]) "-ref")
-                                :onMouseDown #(do
-                                                (om/set-state! owner :record-mouse true))})))))
+                                :onMouseDown #(om/set-state! owner :record-mouse true)})))))
 
 (defn app [data owner]
   (reify
@@ -122,6 +122,7 @@
                (om/build playhead/time-loop data)
                (om/build mouse/mouse-position (:mouse-position data))
                (om/build edit/edit-line (:edit-line data))
+               (om/build palette/palette (:palette data))
                #_(om/build draggable/draggable-window {:data data
                                                      :render-via ankha/inspector})))))
 
