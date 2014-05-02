@@ -8,5 +8,6 @@
 
     om/IRender
     (render [_]
-      (dom/div nil 
-               (dom/div nil (str (:x-pos data) ", " (:y-pos data)))))))
+      (let [mouse-pos (:mouse-position data)]
+        (dom/div nil 
+                 (dom/div nil (str (:x-pos mouse-pos) ", " (:y-pos mouse-pos))))))))

@@ -9,6 +9,7 @@
             [draw-me.components.palette :as palette]
             [draw-me.utils :as utils]
             [draw-me.app-state :as app-state]
+            [draw-me.mouse-state :as mouse-state]
             [draw-me.mouse :as mouse]
             [draw-me.edit :as edit]
             [ankha.core :as ankha]))
@@ -19,7 +20,8 @@
   (let [event (assoc event :timestamp (- (:timestamp event)
                                          (:initial-time @data)))
         event (assoc event :color (get-in @data [:palette :color]))]
-    (om/update! data :mouse-position {:x-pos (:x-pos event)  :y-pos (:y-pos event)})
+    ;; Bad, will!
+    (reset! mouse-state/mouse-state {:mouse-position {:x-pos (:x-pos event)  :y-pos (:y-pos event)}})
     (when (om/get-state owner :record-mouse)
       (om/transact! data :in-progress-line #(conj % event)))))
 
@@ -120,7 +122,6 @@
                (om/build draw-canvas data)
                (om/build history/history-viewer data)
                (om/build playhead/time-loop data)
-               (om/build mouse/mouse-position (:mouse-position data))
                (om/build edit/edit-line (:edit-line data))
                (om/build palette/palette (:palette data))
                #_(om/build draggable/draggable-window {:data data
@@ -134,6 +135,11 @@
     app
     state
     {:target (. js/document (getElementById "app"))})
+
+  (om/root
+   mouse/mouse-position
+   mouse-state/mouse-state
+   {:target (. js/document (getElementById "mouse-pos"))})
   )
 
 (init app-state/app-state)
