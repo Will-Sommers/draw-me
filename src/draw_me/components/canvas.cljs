@@ -18,11 +18,13 @@
       (om/transact! data :in-progress-line #(conj % event)))))
 
 (defn reset-mouse-positions [data]
-  (om/transact! data :complete-lines #(assoc % (symbol (count %))
-                                             {:mouse-positions (:in-progress-line @data)
-                                              :hash (count %)
-                                              :selected true}))
-    (om/update! data :in-progress-line []))
+  (let [hash-pos (inc (:line-count @data))]
+    (om/transact! data :complete-lines #(assoc % (symbol hash-pos)
+                                               {:mouse-positions (:in-progress-line @data)
+                                                :hash hash-pos
+                                                :selected true}))
+    (om/update! data :line-count hash-pos)
+    (om/update! data :in-progress-line [])))
 
 (defn drawing-time-bound [position current-millisecond total-milliseconds tail-lifetime]
   (let [tail-lifetimes 500

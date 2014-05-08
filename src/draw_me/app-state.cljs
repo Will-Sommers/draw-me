@@ -3,6 +3,7 @@
 (def app-state (atom {:complete-lines {}
                       :in-progress-line []
                       :edit-line []
+                      :line-count 0
                       :canvas {:width 399
                                :height 399
                                :name "draw-loop"}
