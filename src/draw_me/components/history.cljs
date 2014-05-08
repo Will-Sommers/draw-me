@@ -20,9 +20,8 @@
 (defn begin-edit [data]
   (om/update! data :edit-line @data))
 
-(defn delete-line [data delete-line]
-  (do
-    (println @data)))
+(defn delete-line [data line]
+  (om/transact! data :complete-lines #(dissoc (:complete-lines @data) (key line))))
 
 (defn line-history [data owner]
   (reify
@@ -35,7 +34,7 @@
                                 :onMouseEnter #(om/transact! data :hover (fn [hover] true))
                                 :onMouseLeave #(om/transact! data :hover (fn [hover] false))
                                :style (history-item-style (:selected data))}
-                          (str "Line " (:index data)))
+                          (str "Line " (key data)))
                  (dom/span #js {:onClick #(begin-edit data)} "Edit")
                  (dom/span #js {:onClick #(put! c-delete-line data)} "Delete"))))))
 
