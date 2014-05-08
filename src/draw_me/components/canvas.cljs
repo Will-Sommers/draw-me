@@ -69,15 +69,15 @@
             selected-lines (filter #(:selected (val %)) (:complete-lines data))
             currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
         
-        (utils/clear-canvas! canvas (get-in data [:canvas :width]) (get-in data [:canvas :height]) 400)
+        (utils/clear-canvas! canvas (get-in data [:canvas :width]) (get-in data [:canvas :height]))
         (if (not (empty? selected-lines))
           (doseq [completed-line (vals selected-lines)]
             (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
               (if (:hover completed-line)
                 (utils/slope-draw! draw-positions canvas "#067300")
                 (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))
-              (utils/slope-draw! currently-drawing-pos canvas)))
-          (utils/slope-draw! currently-drawing-pos canvas))))
+              (utils/slope-draw! currently-drawing-pos canvas "black")))
+          (utils/slope-draw! currently-drawing-pos canvas "black"))))
     
     om/IRender
     (render [_]

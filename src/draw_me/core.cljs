@@ -11,7 +11,7 @@
             [draw-me.utils :as utils]
             [draw-me.app-state :as app-state]
             [draw-me.mouse-state :as mouse-state]
-            b[draw-me.mouse :as mouse]
+            [draw-me.mouse :as mouse]
             [draw-me.edit :as edit]
             [ankha.core :as ankha]))
 
