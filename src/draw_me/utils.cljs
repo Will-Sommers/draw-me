@@ -27,13 +27,13 @@
         (.bezierCurveTo context (:x-pos p0) (:y-pos p0) (:x-pos p1) (:y-pos p1) (:x-pos p0) (:y-pos p0))
         (.stroke context)))))
 
-(defn point-draw! [point canvas]
-  (canvas-draw! (:color point) canvas (:x-pos point) (:y-pos point) 2 2))
-
 (defn canvas-draw! [color canvas x y x-length y-length]
   (let [context (. canvas (getContext "2d"))]
     (set! (.-fillStyle context) color)
     (.fillRect context x y x-length y-length)))
+
+(defn point-draw! [point canvas]
+  (canvas-draw! (:color point) canvas (:x-pos point) (:y-pos point) 2 2))
 
 (defn draw-lines! [color data owner sym-name dom-node-ref]
   (let [canvas dom-node-ref]
