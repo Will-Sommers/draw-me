@@ -14,14 +14,15 @@
   (om/transact! data :complete-lines (fn [data]
                                        (into [] (map #(assoc % :selected bool) data)))))
 
-(defn select [data e]
+;
+(defn select [data]
   (om/transact! data :selected (fn [selected] (not selected))))
 
 (defn begin-edit [data]
   (om/update! data :edit-line @data))
 
 (defn delete-line [data line]
-  (om/transact! data :complete-lines #(dissoc (:complete-lines @data) (key line))))
+  (om/transact! data :complete-lines #(dissoc (:complete-lines @data) (symbol (:hash @line)))))
 
 (defn line-history [data owner]
   (reify
@@ -30,11 +31,11 @@
     (render-state [_ _]
       (let [c-delete-line (om/get-state owner :c-delete-line)]
         (dom/div nil
-                 (dom/span #js {:onClick #(select data %)
+                 (dom/span #js {:onClick #(select data)
                                 :onMouseEnter #(om/transact! data :hover (fn [hover] true))
                                 :onMouseLeave #(om/transact! data :hover (fn [hover] false))
                                :style (history-item-style (:selected data))}
-                          (str "Line " (key data)))
+                          (str "Line " (:hash data)))
                  (dom/span #js {:onClick #(begin-edit data)} "Edit")
                  (dom/span #js {:onClick #(put! c-delete-line data)} "Delete"))))))
 
@@ -61,5 +62,5 @@
                           (dom/span #js {:onClick #(global-toggle-select data true)}  "-Select All-")
                           (dom/span #js {:onClick #(global-toggle-select data false)} "Select None"))
                  (apply dom/div nil 
-                        (om/build-all line-history (:complete-lines data)
+                        (om/build-all line-history (vals (:complete-lines data))
                                       {:init-state {:c-delete-line c-delete-line}})))))))

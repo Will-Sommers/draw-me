@@ -20,6 +20,7 @@
 (defn reset-mouse-positions [data]
   (om/transact! data :complete-lines #(assoc % (symbol (count %))
                                              {:mouse-positions (:in-progress-line @data)
+                                              :hash (count %)
                                               :selected true}))
     (om/update! data :in-progress-line []))
 
