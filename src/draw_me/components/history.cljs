@@ -20,30 +20,47 @@
 (defn begin-edit [data]
   (om/update! data :edit-line @data))
 
+(defn delete-line [data delete-line]
+  (do
+    (println @data)))
+
 (defn line-history [data owner]
   (reify
-    
-    om/IRender
-    (render [_]
-      (let [selected-lines (om/get-state owner :selected)]
+
+    om/IRenderState
+    (render-state [_ _]
+      (let [c-delete-line (om/get-state owner :c-delete-line)]
         (dom/div nil
                  (dom/span #js {:onClick #(select data %)
                                 :onMouseEnter #(om/transact! data :hover (fn [hover] true))
                                 :onMouseLeave #(om/transact! data :hover (fn [hover] false))
                                :style (history-item-style (:selected data))}
                           (str "Line " (:index data)))
-                 (dom/span #js {:onClick #(begin-edit data)} "Edit"))))))
+                 (dom/span #js {:onClick #(begin-edit data)} "Edit")
+                 (dom/span #js {:onClick #(put! c-delete-line data)} "Delete"))))))
 
 (defn history-viewer [data owner]
   (reify
+
+    om/IInitState
+    (init-state [_]
+      {:c-delete-line (chan)})
+
+    om/IDidMount
+    (did-mount [_]
+      (let [c-delete-line (om/get-state owner :c-delete-line)]
+        (go (while true
+              (let [line (<! c-delete-line)]
+                (delete-line data line))))))
     
     om/IRender
     (render [_]
-      (dom/div #js {:className "history"}
-               (dom/div nil
-                        (dom/span nil "History")
-                        (dom/span #js {:onClick #(global-toggle-select data true)}  "-Select All-")
-                        (dom/span #js {:onClick #(global-toggle-select data false)} "Select None"))
-               (apply dom/div nil 
-                      (om/build-all line-history (:complete-lines data)))
-               ))))
+      (let [c-delete-line (om/get-state owner :c-delete-line)]
+        (dom/div #js {:className "history"}
+                 (dom/div nil
+                          (dom/span nil "History")
+                          (dom/span #js {:onClick #(global-toggle-select data true)}  "-Select All-")
+                          (dom/span #js {:onClick #(global-toggle-select data false)} "Select None"))
+                 (apply dom/div nil 
+                        (om/build-all line-history (:complete-lines data)
+                                      {:init-state {:c-delete-line c-delete-line}})))))))

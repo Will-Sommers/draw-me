@@ -54,3 +54,8 @@
       (mod (- current-time initial-time)
            total-milliseconds)))
 
+(defn event->hash [e]
+  (hash-map
+   :timestamp (:timestamp e)
+   :x-pos (.-offsetX (:event e))
+   :y-pos (.-offsetY (:event e))))
