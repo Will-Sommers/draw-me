@@ -12,8 +12,8 @@
 
 (defn global-toggle-select [data bool]
   (om/transact! data :complete-lines (fn [data]
-                                       (into [] (map #(assoc % :selected bool) data)))))
-
+                                       (into {} (map #(hash-map (key %) (assoc (val %) :selected bool)) data)))))
+ 
 ;
 (defn select [data]
   (om/transact! data :selected (fn [selected] (not selected))))
