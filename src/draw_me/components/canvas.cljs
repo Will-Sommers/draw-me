@@ -72,7 +72,6 @@
         (utils/clear-canvas! canvas (get-in data [:canvas :width]) (get-in data [:canvas :height]) 400)
         (if (not (empty? selected-lines))
           (doseq [completed-line (vals selected-lines)]
-            (println completed-line)
             (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
               (if (:hover completed-line)
                 (utils/slope-draw! draw-positions canvas "#067300")
