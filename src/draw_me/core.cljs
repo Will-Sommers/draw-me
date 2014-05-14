@@ -17,6 +17,15 @@
 
 (enable-console-print!)
 
+(defn pause [data]
+  (om/transact! data [:time-loop :pause-start] utils/timestamp))
+
+(defn play [data]
+  (do
+    (let [total-paused-time (- (utils/timestamp) (get-in @data [:time-loop :pause-start]))]
+      (om/transact! data [:time-loop :cummulative-pause-time] (fn [] (+ (get-in @data [:time-loop :cummulative-pause-time]) total-paused-time)))
+      (om/transact! data [:time-loop :pause-start] (fn [] nil)))))
+
 (defn app [data owner]
   (reify
     
@@ -31,6 +40,8 @@
     om/IRender
     (render [_]
       (dom/div nil
+               (dom/div #js {:onClick #(pause data)} "Pause")
+               (dom/div #js {:onClick #(play data)} "Play")
                (dom/div #js {:onClick #(println app-state/app-state)} "Print")
                (om/build canvas/draw-canvas data)
                (om/build history/history-viewer data)
@@ -41,7 +52,7 @@
                                                      :render-via ankha/inspector})))))
 
 
-
+;
 
 (defn init [state]
   (om/root 
@@ -55,6 +66,6 @@
    {:target (. js/document (getElementById "mouse-pos"))})
   )
 
-(init app-state/app-state)
+(init app-state/mock)
 
 ;; (add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))

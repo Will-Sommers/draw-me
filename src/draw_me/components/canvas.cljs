@@ -13,12 +13,14 @@
                                          (:initial-time @data)))
         event (assoc event :color (get-in @data [:palette :color]))]
     ;; Bad, will!
-    (reset! mouse-state/mouse-state {:mouse-position {:x-pos (:x-pos event)  :y-pos (:y-pos event)}})
+    (reset! mouse-state/mouse-state {:mouse-position {:x-pos (:x-pos event)
+                                                      :y-pos (:y-pos event)}})
     (when (om/get-state owner :record-mouse)
       (om/transact! data :in-progress-line #(conj % event)))))
 
-(defn reset-mouse-positions [data]
+(defn reset-mouse-positions [data owner]
   (let [hash-pos (inc (:line-count @data))]
+    (om/set-state! owner :record-mouse false)
     (om/transact! data :complete-lines #(assoc % (symbol hash-pos)
                                                {:mouse-positions (:in-progress-line @data)
                                                 :hash hash-pos
@@ -26,18 +28,27 @@
     (om/update! data :line-count hash-pos)
     (om/update! data :in-progress-line [])))
 
-(defn drawing-time-bound [position current-millisecond total-milliseconds tail-lifetime]
-  (let [tail-lifetimes 500
-        time-floor (- current-millisecond tail-lifetime)]
-    (if (< time-floor 0)
-      (let [real-time-floor (+ total-milliseconds time-floor)]
-        (or (> current-millisecond (mod (:timestamp position) total-milliseconds))
-            (> total-milliseconds (mod (:timestamp position) total-milliseconds) real-time-floor))
-        )
-      (> current-millisecond (mod (:timestamp position) total-milliseconds) time-floor))))
+(defn time->delta [data]
+  (let [current-time (- (:current-millisecond data) (get-in data [:time-loop :cummulative-pause-time]))
+        initial-time (:initial-time data)
+        total-milliseconds (get-in data [:time-loop :loop-in-milliseconds])]
+      (mod (- current-time initial-time)
+           total-milliseconds)))
+
+
+(defn drawing-time-bound [position current-millisecond loop-length tail-lifetime]
+  (let [draw-bound-time (- current-millisecond tail-lifetime)
+        mod-time (mod (:timestamp position) loop-length)]
+    (if (neg? draw-bound-time)
+      (let [draw-bound-time (+ loop-length draw-bound-time)]
+        (or (> current-millisecond mod-time)
+            (> loop-length mod-time draw-bound-time)))
+      (> current-millisecond mod-time draw-bound-time))))
 
 (defn draw-canvas [data owner]
-  (let [canvas-name (get-in data [:canvas :name])]
+  (let [canvas-name (get-in data [:canvas :name])
+        canvas-width (get-in data [:canvas :width])
+        canvas-height (get-in data [:canvas :height])]
     (reify
       
       om/IInitState
@@ -53,42 +64,46 @@
                                [(utils/listen (om/get-node owner canvas-name) "mousemove")])
               mouse-up-chan (async/map
                              (fn [e] (utils/event->hash e))
-                             [(utils/listen (om/get-node owner canvas-name) "mouseup")])
-              ]
+                             [(utils/listen (om/get-node owner canvas-name) "mouseup")])]
           (go (while true
                 (alt!
                  mouse-move-chan ([pos] (record-mouse data owner pos))
-                 mouse-up-chan ([pos] (do
-                                        (om/set-state! owner :record-mouse false)
-                                        (reset-mouse-positions data)
-                                        )))))))
+                 mouse-up-chan ([pos] (reset-mouse-positions data owner)))))))
 
       om/IDidUpdate
       (did-update [_ _ _]
-        (om/set-state! owner :last-millisecond (utils/timestamp))
+        (if (nil? (get-in data [:time-loop :pause-start]))
+          (do
+            (om/set-state! owner :last-millisecond (utils/timestamp))
+            
+            (let [current-millisecond (time->delta data)
+                  loop-length (get-in data [:time-loop :loop-in-milliseconds])
+                  tail-length (get-in data [:time-loop :tail-in-milliseconds])
+                  canvas (om/get-node owner canvas-name)
+                  selected-lines (filter #(:selected (val %)) (:complete-lines data))]
+              (utils/clear-canvas! canvas canvas-width canvas-height)
 
-        (let [current-millisecond (utils/time->delta data)
-              total-milliseconds (get-in data [:time-loop :total-milliseconds])
-              canvas (om/get-node owner canvas-name)
-              selected-lines (filter #(:selected (val %)) (:complete-lines data))
-              currently-drawing-pos (filter #(drawing-time-bound % current-millisecond total-milliseconds (get-in data [:time-loop :tail-in-milliseconds])) (:in-progress-line data))]
-          
-          (utils/clear-canvas! canvas (get-in data [:canvas :width]) (get-in data [:canvas :height]))
-          (if (not (empty? selected-lines))
-            (doseq [completed-line (vals selected-lines)]
-              (let [draw-positions (filter #(drawing-time-bound % current-millisecond total-milliseconds(get-in data [:time-loop :tail-in-milliseconds])) (:mouse-positions completed-line))]
-                (if (:hover completed-line)
-                  (utils/slope-draw! draw-positions canvas "#067300")
-                  (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))
-                (utils/slope-draw! currently-drawing-pos canvas "black")))
-            (utils/slope-draw! currently-drawing-pos canvas "black"))))
+              (if-not (empty? (:in-progress-line data))
+                (let [currently-drawing-line (filter
+                                              #(drawing-time-bound % current-millisecond loop-length tail-length)
+                                              (:in-progress-line data))]
+                  (utils/slope-draw! currently-drawing-line canvas "black")))
+
+              
+              (doseq [completed-line (vals selected-lines)]
+                (let [draw-positions (filter
+                                      #(drawing-time-bound % current-millisecond loop-length tail-length)
+                                      (:mouse-positions completed-line))]
+                  (if (:hover completed-line)
+                    (utils/slope-draw! draw-positions canvas (get-in data [:palette :highlight-color]))
+                    (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))))))))
       
       om/IRender
       (render [_]
         (dom/div nil
                  (dom/canvas #js {:id canvas-name
-                                  :height (get-in data [:canvas :height])
-                                  :width (get-in data [:canvas :width])
+                                  :height canvas-height
+                                  :width canvas-width
                                   :style #js {:border  "1px solid black"}
                                   :ref canvas-name
                                   :onMouseDown #(om/set-state! owner :record-mouse true)})))))

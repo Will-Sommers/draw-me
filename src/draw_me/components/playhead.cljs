@@ -18,14 +18,15 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (let [width (get-in data [:time-loop :width])
-            milliseconds (get-in data [:time-loop :total-milliseconds])
-            frame-width (/ width milliseconds)
-            current-time (mod (- (utils/timestamp) (:initial-time data))
-                      milliseconds)
-            head-position (* frame-width current-time)
+            loop-length (get-in data [:time-loop :loop-in-milliseconds])
+            frame-px-width (/ width loop-length)
+            adjusted-current-millisecond (- (:current-millisecond data) (get-in data [:time-loop :cummulative-pause-time]))
+            current-time (mod (- adjusted-current-millisecond (:initial-time data))
+                              loop-length)
+            head-px-position (* frame-px-width current-time)
             ]
-        
-        (draw-nav-time data owner "time-loop-ref" head-position)))
+        (if (nil? (get-in data [:time-loop :pause-start]))
+          (draw-nav-time data owner "time-loop-ref" head-px-position))))
 
     om/IRender
     (render [_]

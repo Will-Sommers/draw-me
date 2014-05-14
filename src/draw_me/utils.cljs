@@ -47,13 +47,6 @@
     (set! (.-fillStyle context) "#000000")
     (.clearRect context 0 0 w h)))
 
-(defn time->delta [data]
-  (let [current-time (:current-millisecond data)
-        initial-time (:initial-time data)
-        total-milliseconds (get-in data [:time-loop :total-milliseconds])]
-      (mod (- current-time initial-time)
-           total-milliseconds)))
-
 (defn event->hash [e]
   (hash-map
    :timestamp (:timestamp e)
