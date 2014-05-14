@@ -9,8 +9,9 @@
 (enable-console-print!)
 
 (defn record-mouse [data owner event]
-  (let [event (assoc event :timestamp (- (:timestamp event)
-                                         (:initial-time @data)))
+  (let [event (assoc event :timestamp (mod (- (:timestamp event)
+                                              (:initial-time @data))
+                                           (get-in @data [:time-loop :loop-in-milliseconds])))
         event (assoc event :color (get-in @data [:palette :color]))]
     ;; Bad, will!
     (reset! mouse-state/mouse-state {:mouse-position {:x-pos (:x-pos event)
@@ -38,12 +39,12 @@
 
 (defn drawing-time-bound [position current-millisecond loop-length tail-lifetime]
   (let [draw-bound-time (- current-millisecond tail-lifetime)
-        mod-time (mod (:timestamp position) loop-length)]
+        timestamp (:timestamp position)]
     (if (neg? draw-bound-time)
       (let [draw-bound-time (+ loop-length draw-bound-time)]
-        (or (> current-millisecond mod-time)
-            (> loop-length mod-time draw-bound-time)))
-      (> current-millisecond mod-time draw-bound-time))))
+        (or (> current-millisecond timestamp)
+            (> loop-length timestamp draw-bound-time)))
+      (> current-millisecond timestamp  draw-bound-time))))
 
 (defn draw-canvas [data owner]
   (let [canvas-name (get-in data [:canvas :name])
