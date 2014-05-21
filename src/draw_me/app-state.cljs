@@ -7,14 +7,13 @@
                       :canvas {:width 399
                                :height 399
                                :name "draw-loop"}
-                      :time-loop {:width 600
-                                  :height 200
+                      :time-loop {:width 599
+                                  :height 199
                                   :loop-in-milliseconds 2000
                                   :tail-in-milliseconds 500
                                   :pause-start nil
                                   :cummulative-pause-time 10}
                       :initial-time 0
-                      :current-millisecond 0
                       :palette {:draw-color "#000000"
                                 :hightlight-color "#067300"}}))
 

@@ -28,12 +28,19 @@
 
 (defn app [data owner]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:pause-channel (chan)})
     
     om/IDidMount
     (did-mount [_]
       (let [tick (fn tick []
-                   (om/transact! data :current-millisecond utils/timestamp)
-                   (js/requestAnimationFrame tick))]        
+                   (om/set-state! owner :current-millisecond (utils/timestamp))
+                   (js/requestAnimationFrame tick))
+            pause-channel (om/get-state owner :pause-channel)]
+        (go (while true
+              (let [pause-comment (<! pause-channel)]))
+            (om/set-state! owner :paused? pause-comment))
         (om/transact! data :initial-time utils/timestamp)        
         (tick)))
     
@@ -43,16 +50,16 @@
                (dom/div #js {:onClick #(pause data)} "Pause")
                (dom/div #js {:onClick #(play data)} "Play")
                (dom/div #js {:onClick #(println app-state/app-state)} "Print")
-               (om/build canvas/draw-canvas data)
+               (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
                (om/build history/history-viewer data)
-               (om/build playhead/time-loop data)
+               (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}})
                (om/build edit/edit-line (:edit-line data))
                (om/build palette/palette (:palette data))
                #_(om/build draggable/draggable-window {:data data
                                                      :render-via ankha/inspector})))))
 
 
-;
+
 
 (defn init [state]
   (om/root 

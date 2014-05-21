@@ -29,8 +29,8 @@
     (om/update! data :line-count hash-pos)
     (om/update! data :in-progress-line [])))
 
-(defn time->delta [data]
-  (let [current-time (- (:current-millisecond data) (get-in data [:time-loop :cummulative-pause-time]))
+(defn time->delta [data current-millisecond]
+  (let [current-time (- current-millisecond (get-in data [:time-loop :cummulative-pause-time]))
         initial-time (:initial-time data)
         total-milliseconds (get-in data [:time-loop :loop-in-milliseconds])]
       (mod (- current-time initial-time)
@@ -77,7 +77,7 @@
           (do
             (om/set-state! owner :last-millisecond (utils/timestamp))
             
-            (let [current-millisecond (time->delta data)
+            (let [current-millisecond (time->delta data (om/get-state owner :current-millisecond))
                   loop-length (get-in data [:time-loop :loop-in-milliseconds])
                   tail-length (get-in data [:time-loop :tail-in-milliseconds])
                   canvas (om/get-node owner canvas-name)
