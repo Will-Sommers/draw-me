@@ -42,10 +42,9 @@
                    (:mouse-positions))]
       (canvas-draw! color canvas (:x-pos x) (:y-pos x) 2 2))))
 
-(defn clear-canvas! [canvas w h]
-  (let [context (. canvas (getContext "2d"))]
-    (set! (.-fillStyle context) "#000000")
-    (.clearRect context 0 0 w h)))
+(defn clear-canvas! [context w h]
+  (set! (.-fillStyle context) "#000000")
+  (.clearRect context 0 0 w h))
 
 (defn event->hash [e]
   (hash-map

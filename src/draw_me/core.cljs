@@ -31,7 +31,7 @@
     om/IInitState
     (init-state [_]
       {:pause-channel (chan)})
-    
+
     om/IDidMount
     (did-mount [_]
       (let [tick (fn tick []
@@ -41,20 +41,25 @@
         (go (while true
               (let [pause-comment (<! pause-channel)]))
             (om/set-state! owner :paused? pause-comment))
-        (om/transact! data :initial-time utils/timestamp)        
+        (om/transact! data :initial-time utils/timestamp)
         (tick)))
-    
+
     om/IRender
     (render [_]
-      (dom/div nil
-               (dom/div #js {:onClick #(pause data)} "Pause")
-               (dom/div #js {:onClick #(play data)} "Play")
-               (dom/div #js {:onClick #(println app-state/app-state)} "Print")
-               (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
-               (om/build history/history-viewer data)
-               (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}})
-               (om/build edit/edit-line (:edit-line data))
-               (om/build palette/palette (:palette data))
+      (dom/div #js {:className "wrapper"}
+               (dom/header nil
+                           (dom/div #js {:className "name"} "A Witty Name Here"))
+               (dom/div #js {:className "main"}
+                        (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
+
+                        (dom/div #js {:className "controls"}
+                                 (dom/div #js {:onClick #(pause data)} "Pause")
+                                 (dom/div #js {:onClick #(play data)} "Play")
+                                 (dom/div #js {:onClick #(println app-state/app-state)} "Print"))
+                        (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}}))
+
+               (dom/div #js {:className "history"}
+                        (om/build history/history-viewer data))
                #_(om/build draggable/draggable-window {:data data
                                                      :render-via ankha/inspector})))))
 
@@ -62,7 +67,7 @@
 
 
 (defn init [state]
-  (om/root 
+  (om/root
     app
     state
     {:target (. js/document (getElementById "app"))})
@@ -73,6 +78,6 @@
    {:target (. js/document (getElementById "mouse-pos"))})
   )
 
-(init app-state/app-state)
+(init app-state/mock)
 
 ;; (add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))

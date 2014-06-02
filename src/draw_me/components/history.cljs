@@ -13,7 +13,7 @@
 (defn global-toggle-select [data bool]
   (om/transact! data :complete-lines (fn [data]
                                        (into {} (map #(hash-map (key %) (assoc (val %) :selected bool)) data)))))
- 
+
 ;
 (defn select [data]
   (om/transact! data :selected (fn [selected] (not selected))))
@@ -30,7 +30,7 @@
     om/IRenderState
     (render-state [_ _]
       (let [c-delete-line (om/get-state owner :c-delete-line)]
-        (dom/div nil
+        (dom/div #js {:className "line"}
                  (dom/span #js {:onClick #(select data)
                                 :onMouseEnter #(om/transact! data :hover (fn [hover] true))
                                 :onMouseLeave #(om/transact! data :hover (fn [hover] false))
@@ -52,15 +52,17 @@
         (go (while true
               (let [line (<! c-delete-line)]
                 (delete-line data line))))))
-    
+
     om/IRender
     (render [_]
       (let [c-delete-line (om/get-state owner :c-delete-line)]
-        (dom/div #js {:className "history"}
-                 (dom/div nil
-                          (dom/span nil "History")
-                          (dom/span #js {:onClick #(global-toggle-select data true)}  "-Select All-")
-                          (dom/span #js {:onClick #(global-toggle-select data false)} "Select None"))
-                 (apply dom/div nil 
+        (dom/div #js {:className  "history-group"}
+                 (dom/div #js {:className "history-header-group"}
+                          (dom/div #js {:className "header"} "History")
+                          (dom/div #js {:className "history-options"}
+                                   (dom/span #js {:onClick #(global-toggle-select data true)}  "All")
+                                   (dom/span nil "/")
+                                   (dom/span #js {:onClick #(global-toggle-select data false)} "None")))
+                 (apply dom/div nil
                         (om/build-all line-history (vals (:complete-lines data))
                                       {:init-state {:c-delete-line c-delete-line}})))))))

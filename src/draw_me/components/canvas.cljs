@@ -51,12 +51,12 @@
         canvas-width (get-in data [:canvas :width])
         canvas-height (get-in data [:canvas :height])]
     (reify
-      
+
       om/IInitState
       (init-state [_]
         {:c-mouse (chan)
          :mouse-positions []})
-      
+
       om/IDidMount
       (did-mount [_]
         (let [c-mouse (om/get-state owner :c-mouse)
@@ -76,13 +76,15 @@
         (if (nil? (get-in data [:time-loop :pause-start]))
           (do
             (om/set-state! owner :last-millisecond (utils/timestamp))
-            
+
             (let [current-millisecond (time->delta data (om/get-state owner :current-millisecond))
                   loop-length (get-in data [:time-loop :loop-in-milliseconds])
                   tail-length (get-in data [:time-loop :tail-in-milliseconds])
                   canvas (om/get-node owner canvas-name)
-                  selected-lines (filter #(:selected (val %)) (:complete-lines data))]
-              (utils/clear-canvas! canvas canvas-width canvas-height)
+                  selected-lines (filter #(:selected (val %)) (:complete-lines data))
+                  context (. (om/get-node owner canvas-name) (getContext "2d"))]
+
+              (utils/clear-canvas! context canvas-width canvas-height)
 
               (if-not (empty? (:in-progress-line data))
                 (let [currently-drawing-line (filter
@@ -90,7 +92,7 @@
                                               (:in-progress-line data))]
                   (utils/slope-draw! currently-drawing-line canvas "black")))
 
-              
+
               (doseq [completed-line (vals selected-lines)]
                 (let [draw-positions (filter
                                       #(drawing-time-bound % current-millisecond loop-length tail-length)
@@ -98,14 +100,14 @@
                   (if (:hover completed-line)
                     (utils/slope-draw! draw-positions canvas (get-in data [:palette :highlight-color]))
                     (utils/slope-draw! draw-positions canvas (:color (first draw-positions))))))))))
-      
+
       om/IRender
       (render [_]
         (dom/div nil
                  (dom/canvas #js {:id canvas-name
+                                  :className "canvas"
                                   :height canvas-height
                                   :width canvas-width
-                                  :style #js {:border  "1px solid black"}
                                   :ref canvas-name
                                   :onMouseDown #(om/set-state! owner :record-mouse true)})))))
 )

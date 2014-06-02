@@ -1,0 +1,88 @@
+$darkBlue: #0E0069;
+$textColor: #BFBFBF;
+$header: #00D466;
+
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  color: $textColor;
+  overflow: none;
+  min-width: 800px;
+}
+
+.history {
+  float: right;
+  width: 300px;
+  height: 100%;
+  background-color: $darkBlue;
+  padding: 8px;
+}
+
+header {
+  height: 40px;
+  width: 100%;
+  background-color: $header;
+  .name {
+    color: white;
+    margin: auto;
+    width: 200px;
+    height: 20px;
+    vertical-align: middle;
+    }
+}
+
+.clear {
+  clear: both;
+}
+
+.main {
+  margin-left: 20px;
+  margin-top: 20px;
+  float: left;
+}
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #333333;
+}
+
+#time-loop {
+  background-color: white;
+}
+
+.canvas {
+  background-color: white;
+}
+
+.history-group {
+  font-size: 12px;
+}
+
+.history-header-group {
+  border-bottom: 2px solid $header;
+  padding-bottom: 10px;
+  div {
+    display: inline-block;
+  }
+  .history-options {
+    float: right;
+    display: block;
+    span {
+      padding-left: 10px;
+}
+}
+}
+
+.line {
+  padding-top: 5px;
+}
+
+.controls {
+  padding: 10px 0px;
+  div {
+  display: inline-block;
+  padding-right: 10px;
+  }
+}
