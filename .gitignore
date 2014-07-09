@@ -6,6 +6,8 @@ pom.xml
 /classes/
 /out/
 /target/
+.nrepl-port
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/
+/styles/.sass-cache
