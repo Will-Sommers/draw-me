@@ -51,3 +51,10 @@
    :timestamp (:timestamp e)
    :x-pos (.-offsetX (:event e))
    :y-pos (.-offsetY (:event e))))
+
+(defn log [q]
+  (.log js/console q))
+
+(defn loge [e]
+  (.persist e)
+  (log e))
