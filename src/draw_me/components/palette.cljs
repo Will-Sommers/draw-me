@@ -2,18 +2,18 @@
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]]
             [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
+            [om-tools.core :refer-macros [defcomponent]]
+            [om-tools.dom :as dom :include-macros true]
             [draw-me.utils :as utils]))
 
 
-(defn palette [data owner]
-  (reify
-    om/IRender
-    (render [_]
-      (dom/div nil
-               (dom/input #js {:id "color-input"
-                               :type "color"
-                               :onKeyDown #(println (.-value (. js/document (getElementById "color-input"))))})
-               (dom/div #js {:className "palette"
-                             :style #js {:backgroundColor (:color data)}}
-                        "Test")))))
+(defcomponent palette [data owner]
+
+  (render [_]
+    (dom/div
+      dom/input {:id "color-input"
+                     :type "color"
+                     :on-key-down #(println (.-value (. js/document (getElementById "color-input"))))}
+      (dom/div {:class "palette"
+                    :style {:background-color (:color data)}}
+        "Test"))))
