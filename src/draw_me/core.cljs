@@ -19,20 +19,23 @@
 
 (enable-console-print!)
 
-(defn pause [data]
-  (om/transact! data [:time-loop :pause-start] utils/timestamp))
+(defn pause [data owner]
+  (om/transact! data [:time-loop :pause-start] utils/timestamp)
+  (om/set-state! owner :paused? true))
 
-(defn play [data]
+(defn play [data owner]
   (let [total-paused-time (- (utils/timestamp) (get-in @data [:time-loop :pause-start]))]
+    (om/set-state! owner :paused? false)
     (om/transact! data [:time-loop :cummulative-pause-time] (fn [] (+ (get-in @data [:time-loop :cummulative-pause-time]) total-paused-time)))
     (om/transact! data [:time-loop :pause-start] (fn [] nil))))
 
 (defcomponent app [data owner]
 
   (init-state [_]
-    {:pause-channel (chan)})
+    {:paused? false})
 
-  (render [_]
+  (render-state [_ {:keys [paused?
+                           current-millisecond]}]
 
     (om/set-state! owner :current-millisecond (utils/timestamp))
 
@@ -40,13 +43,13 @@
       (dom/header
         (dom/div {:class "name"} "A Witty Name Here"))
       (dom/div {:class "main"}
-        (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
+        (om/build canvas/draw-canvas data {:state {:current-millisecond current-millisecond
+                                                   :paused? paused? }})
 
         (dom/div {:class "controls"}
-          (if (nil? (get-in data [:time-loop :pause-start]))
-            (dom/div {:on-click #(pause data)} "Pause")
-            (dom/div {:on-click #(play data)} "Play"))
-          (dom/div {:on-click #(println app-state/app-state)} "Print"))
+          (if paused?
+            (dom/div {:on-click #(play data owner)} "Play")
+            (dom/div {:on-click #(pause data owner)} "Pause")))
         (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}}))
 
       (dom/div  {:class "right-sidebar"}
