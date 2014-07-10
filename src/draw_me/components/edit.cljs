@@ -2,16 +2,15 @@
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]]
             [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]))
+            [om-tools.core :refer-macros [defcomponent]]
+            [om-tools.dom :as dom :include-macros true]))
 
 
 
 
-(defn edit-line [data owner]
-  (reify
+(defcomponent edit-line [data owner]
 
-    om/IRender
-    (render [_]
-      (dom/div #js {:className "edit-line-group.sidebar-group"}
-               (dom/div #js {:className "sidebar-header-group"}
-                        (dom/div #js {:className "sidebar-header"} "Edit Line"))))))
+  (render [_]
+    (dom/div {:class "edit-line-group.sidebar-group"}
+      (dom/div {:class "sidebar-header-group"}
+        (dom/div {:class "sidebar-header"} "Edit Line")))))
