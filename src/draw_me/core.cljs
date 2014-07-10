@@ -2,7 +2,8 @@
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.core.async :as async :refer [>! <! alts! chan sliding-buffer put! close!]]
             [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
+            [om-tools.dom :as dom :include-macros true]
+            [om-tools.core :refer macros [defcomponent]]
             [draw-me.components.history :as history]
             [draw-me.components.playhead :as playhead]
             [draw-me.components.draggable :as draggable]
@@ -22,50 +23,37 @@
   (om/transact! data [:time-loop :pause-start] utils/timestamp))
 
 (defn play [data]
-  (do
-    (let [total-paused-time (- (utils/timestamp) (get-in @data [:time-loop :pause-start]))]
-      (om/transact! data [:time-loop :cummulative-pause-time] (fn [] (+ (get-in @data [:time-loop :cummulative-pause-time]) total-paused-time)))
-      (om/transact! data [:time-loop :pause-start] (fn [] nil)))))
+  (let [total-paused-time (- (utils/timestamp) (get-in @data [:time-loop :pause-start]))]
+    (om/transact! data [:time-loop :cummulative-pause-time] (fn [] (+ (get-in @data [:time-loop :cummulative-pause-time]) total-paused-time)))
+    (om/transact! data [:time-loop :pause-start] (fn [] nil))))
 
-(defn app [data owner]
-  (reify
-    om/IInitState
-    (init-state [_]
-      {:pause-channel (chan)})
+(defcomponent app [data owner]
+  (init-state [_]
+    {:pause-channel (chan)})
 
-    om/IDidMount
-    (did-mount [_]
-      (let [tick (fn tick []
-                   (om/set-state! owner :current-millisecond (utils/timestamp))
-                   (js/requestAnimationFrame tick))
-            pause-channel (om/get-state owner :pause-channel)]
-        (go (while true
-              (let [pause-comment (<! pause-channel)]))
-            (om/set-state! owner :paused? pause-comment))
-        (om/transact! data :initial-time utils/timestamp)
-        (tick)))
+  render [_]
 
-    om/IRender
-    (render [_]
-      (dom/div #js {:className "wrapper"}
-               (dom/header nil
-                           (dom/div #js {:className "name"} "A Witty Name Here"))
-               (dom/div #js {:className "main"}
-                        (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
+  (om/set-state! owner :current-millisecond (utils/timestamp))
 
-                        (dom/div #js {:className "controls"}
-                                 (if (nil? (get-in data [:time-loop :pause-start]))
-                                   (dom/div #js {:onClick #(pause data)} "Pause")
-                                   (dom/div #js {:onClick #(play data)} "Play"))
-                                 (dom/div #js {:onClick #(println app-state/app-state)} "Print"))
-                        (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}}))
+  (dom/div {:class "wrapper"}
+    (dom/header
+      (dom/div {:class "name"} "A Witty Name Here"))
+    (dom/div {:class "main"}
+      (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
 
-               (dom/div #js {:className "right-sidebar"}
-                        (om/build history/history-viewer data)
-                        (om/build edit/edit-line data))
-              (om/build toolbox/toolbox data)
-              #_(om/build draggable/draggable-window {:data data
-                                                    :render-via ankha/inspector})))))
+      (dom/div {:class "controls"}
+        (if (nil? (get-in data [:time-loop :pause-start]))
+          (dom/div {:on-click #(pause data)} "Pause")
+          (dom/div {:on-click #(play data)} "Play"))
+        (dom/div {:on-click #(println app-state/app-state)} "Print"))
+      (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}}))
+
+    (dom/div  {:class "right-sidebar"}
+      (om/build history/history-viewer data)
+      (om/build edit/edit-line data))
+    (om/build toolbox/toolbox data)
+    #_(om/build draggable/draggable-window {:data data
+                                            :render-via ankha/inspector})))
 
 
 
@@ -79,8 +67,7 @@
   (om/root
    mouse/mouse-position
    mouse-state/mouse-state
-   {:target (. js/document (getElementById "mouse-pos"))})
-  )
+   {:target (. js/document (getElementById "mouse-pos"))}))
 
 (init (atom app-state/app-state))
 

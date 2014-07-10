@@ -12,6 +12,8 @@ goog.addDependency("../cljs/core/async/impl/buffers.js", ['cljs.core.async.impl.
 goog.addDependency("../om/dom.js", ['om.dom'], ['cljs.core']);
 goog.addDependency("../cljs/core/async/impl/dispatch.js", ['cljs.core.async.impl.dispatch'], ['cljs.core', 'cljs.core.async.impl.buffers']);
 goog.addDependency("../cljs/core/async/impl/channels.js", ['cljs.core.async.impl.channels'], ['cljs.core.async.impl.dispatch', 'cljs.core', 'cljs.core.async.impl.buffers', 'cljs.core.async.impl.protocols']);
+goog.addDependency("../clojure/string.js", ['clojure.string'], ['goog.string', 'cljs.core', 'goog.string.StringBuffer']);
+goog.addDependency("../om_tools/dom.js", ['om_tools.dom'], ['cljs.core', 'om.dom', 'clojure.string']);
 goog.addDependency("../cljs/core/async/impl/timers.js", ['cljs.core.async.impl.timers'], ['cljs.core.async.impl.channels', 'cljs.core.async.impl.dispatch', 'cljs.core', 'cljs.core.async.impl.protocols']);
 goog.addDependency("../cljs/core/async.js", ['cljs.core.async'], ['cljs.core.async.impl.channels', 'cljs.core.async.impl.dispatch', 'cljs.core', 'cljs.core.async.impl.buffers', 'cljs.core.async.impl.protocols', 'cljs.core.async.impl.ioc_helpers', 'cljs.core.async.impl.timers']);
 goog.addDependency("../draw_me/utils.js", ['draw_me.utils'], ['cljs.core', 'cljs.core.async', 'goog.events.EventType', 'goog.events']);
@@ -19,7 +21,6 @@ goog.addDependency("../om/core.js", ['om.core'], ['cljs.core', 'om.dom', 'goog.u
 goog.addDependency("../draw_me/mouse_state.js", ['draw_me.mouse_state'], ['cljs.core']);
 goog.addDependency("../draw_me/components/canvas.js", ['draw_me.components.canvas'], ['draw_me.utils', 'cljs.core', 'om.dom', 'cljs.core.async', 'om.core', 'draw_me.mouse_state']);
 goog.addDependency("../draw_me/components/toolbox.js", ['draw_me.components.toolbox'], ['draw_me.utils', 'cljs.core', 'om.dom', 'cljs.core.async', 'om.core']);
-goog.addDependency("../clojure/string.js", ['clojure.string'], ['goog.string', 'cljs.core', 'goog.string.StringBuffer']);
 goog.addDependency("../ankha/core.js", ['ankha.core'], ['cljs.core', 'om.dom', 'goog.object', 'om.core', 'clojure.string']);
 goog.addDependency("../draw_me/components/draggable.js", ['draw_me.components.draggable'], ['ankha.core', 'cljs.core', 'om.dom', 'cljs.core.async', 'goog.events.EventType', 'om.core', 'goog.events']);
 goog.addDependency("../draw_me/app_state.js", ['draw_me.app_state'], ['cljs.core']);
@@ -28,4 +29,4 @@ goog.addDependency("../draw_me/components/mouse.js", ['draw_me.components.mouse'
 goog.addDependency("../draw_me/components/history.js", ['draw_me.components.history'], ['cljs.core', 'om.dom', 'cljs.core.async', 'om.core', 'draw_me.app_state']);
 goog.addDependency("../draw_me/components/edit.js", ['draw_me.components.edit'], ['cljs.core', 'om.dom', 'cljs.core.async', 'om.core']);
 goog.addDependency("../draw_me/components/playhead.js", ['draw_me.components.playhead'], ['draw_me.utils', 'cljs.core', 'om.dom', 'cljs.core.async', 'om.core']);
-goog.addDependency("../draw_me/core.js", ['draw_me.core'], ['draw_me.components.toolbox', 'draw_me.components.mouse', 'draw_me.utils', 'ankha.core', 'cljs.core', 'draw_me.components.history', 'om.dom', 'cljs.core.async', 'draw_me.components.draggable', 'draw_me.components.edit', 'draw_me.components.canvas', 'draw_me.components.playhead', 'om.core', 'draw_me.mouse_state', 'draw_me.components.palette', 'draw_me.app_state']);
+goog.addDependency("../draw_me/core.js", ['draw_me.core'], ['draw_me.components.toolbox', 'draw_me.components.mouse', 'draw_me.utils', 'om_tools.dom', 'ankha.core', 'cljs.core', 'draw_me.components.history', 'om.dom', 'cljs.core.async', 'draw_me.components.draggable', 'draw_me.components.edit', 'draw_me.components.canvas', 'draw_me.components.playhead', 'om.core', 'draw_me.mouse_state', 'draw_me.components.palette', 'draw_me.app_state']);
