@@ -52,7 +52,7 @@
       (dom/div  {:class "right-sidebar"}
         (om/build history/history-viewer data)
         (om/build edit/edit-line data))
-      (om/build toolbox/toolbox data)
+      #_(om/build toolbox/toolbox data)
       #_(om/build draggable/draggable-window {:data data
                                               :render-via ankha/inspector}))))
 

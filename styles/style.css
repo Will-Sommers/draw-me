@@ -69,8 +69,6 @@ header {
 .toolbox-wrapper {
   font-size: 12px;
   position: fixed;
-  top: 120px;
-  right: 400px;
   z-index: 15;
   width: 200px;
   height: 400px;
