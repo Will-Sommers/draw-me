@@ -1,5 +1,6 @@
 (ns draw-me.components.mouse
   (:require [om.core :as om :include-macros true]
+            [om-tools.core :refer-macros [defcomponent]]
             [om-tools.dom :as dom :include-macros true]))
 
 
