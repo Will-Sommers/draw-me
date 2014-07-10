@@ -8,11 +8,12 @@
             [draw-me.components.draggable :as draggable]
             [draw-me.components.palette :as palette]
             [draw-me.components.canvas :as canvas]
+            [draw-me.components.toolbox :as toolbox]
             [draw-me.utils :as utils]
             [draw-me.app-state :as app-state]
             [draw-me.mouse-state :as mouse-state]
-            [draw-me.mouse :as mouse]
-            [draw-me.edit :as edit]
+            [draw-me.components.mouse :as mouse]
+            [draw-me.components.edit :as edit]
             [ankha.core :as ankha]))
 
 (enable-console-print!)
@@ -53,15 +54,18 @@
                         (om/build canvas/draw-canvas data {:state {:current-millisecond (om/get-state owner :current-millisecond)}})
 
                         (dom/div #js {:className "controls"}
-                                 (dom/div #js {:onClick #(pause data)} "Pause")
-                                 (dom/div #js {:onClick #(play data)} "Play")
+                                 (if (nil? (get-in data [:time-loop :pause-start]))
+                                   (dom/div #js {:onClick #(pause data)} "Pause")
+                                   (dom/div #js {:onClick #(play data)} "Play"))
                                  (dom/div #js {:onClick #(println app-state/app-state)} "Print"))
                         (om/build playhead/time-loop data {:state {:current-millisecond (om/get-state owner :current-millisecond) :paused? (om/get-state owner :paused?)}}))
 
-               (dom/div #js {:className "history"}
-                        (om/build history/history-viewer data))
-               #_(om/build draggable/draggable-window {:data data
-                                                     :render-via ankha/inspector})))))
+               (dom/div #js {:className "right-sidebar"}
+                        (om/build history/history-viewer data)
+                        (om/build edit/edit-line data))
+              (om/build toolbox/toolbox data)
+              #_(om/build draggable/draggable-window {:data data
+                                                    :render-via ankha/inspector})))))
 
 
 

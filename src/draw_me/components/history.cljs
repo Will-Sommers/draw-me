@@ -7,8 +7,8 @@
 
 (defn history-item-style [selected?]
   (if selected?
-    #js {:backgroundColor "#ccc"}
-    #js {:backgroundColor "#fff"}))
+    #js {:color "#BFBFBF"}
+    #js {:color "#292929"}))
 
 (defn global-toggle-select [data bool]
   (om/transact! data :complete-lines (fn [data]
@@ -22,6 +22,7 @@
   (om/update! data :edit-line @data))
 
 (defn delete-line [data line]
+  (println (:hash @line))
   (om/transact! data :complete-lines #(dissoc (:complete-lines @data) (symbol (:hash @line)))))
 
 (defn line-history [data owner]
@@ -30,11 +31,12 @@
     om/IRenderState
     (render-state [_ _]
       (let [c-delete-line (om/get-state owner :c-delete-line)]
-        (dom/div #js {:className "line"}
+        (dom/div #js {:className "line"
+                      :style (history-item-style (:selected data))}
                  (dom/span #js {:onClick #(select data)
                                 :onMouseEnter #(om/transact! data :hover (fn [hover] true))
                                 :onMouseLeave #(om/transact! data :hover (fn [hover] false))
-                               :style (history-item-style (:selected data))}
+                               }
                           (str "Line " (:hash data)))
                  (dom/span #js {:onClick #(begin-edit data)} "Edit")
                  (dom/span #js {:onClick #(put! c-delete-line data)} "Delete"))))))
@@ -57,8 +59,8 @@
     (render [_]
       (let [c-delete-line (om/get-state owner :c-delete-line)]
         (dom/div #js {:className  "history-group"}
-                 (dom/div #js {:className "history-header-group"}
-                          (dom/div #js {:className "header"} "History")
+                 (dom/div #js {:className "sidebar-header-group"}
+                          (dom/div #js {:className "sidebar-header"} "History")
                           (dom/div #js {:className "history-options"}
                                    (dom/span #js {:onClick #(global-toggle-select data true)}  "All")
                                    (dom/span nil "/")
