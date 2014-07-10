@@ -15,13 +15,11 @@
                              (put! out (hash-map :event event :timestamp (timestamp)))))
     out))
 
-(defn slope-draw! [point-vec canvas color]
-  (let [context (. canvas (getContext "2d"))
-        point-pairs (partition 2 1 point-vec)]
+(defn slope-draw! [point-vec context color]
+  (let [point-pairs (partition 2 1 point-vec)]
     (.beginPath context)
     (set! (.-strokeStyle context) color)
     (doseq [points point-pairs]
-      #_(point-draw! (first points) canvas)
       (let [p0 (first points)
             p1 (second points)]
         (.bezierCurveTo context (:x-pos p0) (:y-pos p0) (:x-pos p1) (:y-pos p1) (:x-pos p0) (:y-pos p0))
