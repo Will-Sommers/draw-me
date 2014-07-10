@@ -1,13 +1,11 @@
 (ns draw-me.components.mouse
   (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]))
+            [om-tools.dom :as dom :include-macros true]))
 
 
-(defn mouse-position [data owner]
-  (reify
+(defcomponent mouse-position [data owner]
 
-    om/IRender
-    (render [_]
-      (let [mouse-pos (:mouse-position data)]
-        (dom/div nil
-                 (dom/div nil (str (:x-pos mouse-pos) ", " (:y-pos mouse-pos))))))))
+  (render [_]
+    (let [mouse-pos (:mouse-position data)]
+      (dom/div
+        (dom/div (str (:x-pos mouse-pos) ", " (:y-pos mouse-pos)))))))
