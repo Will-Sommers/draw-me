@@ -34,6 +34,7 @@
   (init-state [_]
     {:c-drag-drop (chan)
      :dragging? false
+     :open? true
      :left "600"
      :top "150"})
 
@@ -47,18 +48,31 @@
   (render-state [_ {:keys [c-drag-drop
                            dragging?
                            left
-                           top]}]
+                           top
+                           open?]}]
     (dom/div
       (if dragging?
         (dom/div {:style style-hash}))
-      (dom/div {:class "toolbox-wrapper"
+      (dom/div {:class (dom/class-set {"toolbox-wrapper" true
+                                       "toolbox-min" (not open?)
+                                       "toolbox-max" open?})
                 :style {:left left
                         :top top}}
-        (dom/div {:class "toolbox-header"
-                  :style (pointer-style dragging?)
-                  :on-mouse-down #(om/set-state! owner :dragging? true)
-                  :on-mouse-move #(if dragging?
-                                    (update-position % owner))
-                  :on-mouse-out #(if dragging?
-                                   (update-position % owner))
-                  :on-mouse-up #(om/set-state! owner :dragging? false)} "Tools")))))
+        (dom/div {:class "toolbox-header"}
+          (dom/div {:style (pointer-style dragging?)
+                    :on-mouse-down #(om/set-state! owner :dragging? true)
+                    :on-mouse-move #(if dragging?
+                                      (update-position % owner))
+                    :on-mouse-out #(if dragging?
+                                     (update-position % owner))
+                    :on-mouse-up #(om/set-state! owner :dragging? false)}"Tools")
+          (dom/i {:class (dom/class-set {"fa" true
+                                         (if open?
+                                           "fa-chevron-up"
+                                           "fa-chevron-down") true
+                                         "toggle-toolbox" true})
+                  :on-click #(do
+                               (log %)
+                               (. % (stopPropagation))
+                               (log "hi")
+                               (om/set-state! owner :open? (not open?)))}))))))

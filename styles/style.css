@@ -71,10 +71,18 @@ header {
   position: fixed;
   z-index: 15;
   width: 200px;
-  height: 400px;
+  max-height: 5400px;
   color: #1f1f1f;
   background-color: #ccc; }
-  .toolbox-wrapper div {
-    padding: 8px; }
   .toolbox-wrapper .toolbox-header {
-    background-color: #4A4A4A; }
+    background-color: #4A4A4A;
+    padding: 8px; }
+  .toolbox-wrapper .toggle-toolbox {
+    float: right;
+    margin-top: -12px; }
+
+.toolbox-min {
+  height: 0px; }
+
+.toolbox-max {
+  height: 400px; }

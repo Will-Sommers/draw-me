@@ -1,8 +1,29 @@
+
+
 $darkBlue: #0E0069;
 $textColor: #BFBFBF;
 $textColorDark: #1F1F1F;
 $deselected-text: #292929;
 $header: #00D466;
+
+
+// mixin
+
+@mixin transitions($property, $duration, $function, $delay) {
+  -webkit-transition: $property $duration $function $delay;
+  -moz-transition: $property $duration $function $delay;
+  -o-transition: $property $duration $function $delay;
+  transition: $property $duration $function $delay;
+}
+
+ @mixin transform($x, $y, $z) {
+  -webkit-transform: translate3d($x, $y, $z);
+  -moz-transform: translate3d($x, $y, $z);
+  -ms-transform: translate3d($x, $y, $z);
+  transform: translate3d($x, $y, $z);
+}
+
+// end mixin
 
 
 body {
@@ -96,13 +117,23 @@ header {
   position: fixed;
   z-index: 15;
   width: 200px;
-  height: 400px;
+  max-height: 5400px;
   color: $textColorDark;
   background-color: #ccc;
-  div {
-    padding: 8px;
-    }
   .toolbox-header {
     background-color: #4A4A4A;
+    padding: 8px;
     }
+  .toggle-toolbox {
+    float: right;
+    margin-top: -12px;
+    }
+}
+
+.toolbox-min {
+  height: 0px;
+}
+
+.toolbox-max {
+  height: 400px;
 }
