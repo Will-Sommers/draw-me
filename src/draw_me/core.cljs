@@ -78,6 +78,6 @@
    {:target (. js/document (getElementById "mouse-pos"))})
   )
 
-(init app-state/mock)
+(init (atom app-state/app-state))
 
 ;; (add-watch app-state/app-state :foo (fn [_ _ _ new-val] (println new-val)))
