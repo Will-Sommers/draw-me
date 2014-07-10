@@ -1,5 +1,7 @@
 $darkBlue: #0E0069;
 $textColor: #BFBFBF;
+$textColorDark: #1F1F1F;
+$deselected-text: #292929;
 $header: #00D466;
 
 
@@ -11,13 +13,6 @@ body {
   min-width: 800px;
 }
 
-.history {
-  float: right;
-  width: 300px;
-  height: 100%;
-  background-color: $darkBlue;
-  padding: 8px;
-}
 
 header {
   height: 40px;
@@ -56,11 +51,16 @@ header {
   background-color: white;
 }
 
-.history-group {
+.right-sidebar {
+  float: right;
+  width: 300px;
+  height: 100%;
+  background-color: $darkBlue;
+  padding: 8px;
   font-size: 12px;
 }
 
-.history-header-group {
+.sidebar-header-group {
   border-bottom: 2px solid $header;
   padding-bottom: 10px;
   div {
@@ -75,6 +75,10 @@ header {
 }
 }
 
+.history-group {
+  height: 300px;
+}
+
 .line {
   padding-top: 5px;
 }
@@ -85,4 +89,22 @@ header {
   display: inline-block;
   padding-right: 10px;
   }
+}
+
+.toolbox-wrapper {
+  font-size: 12px;
+  position: fixed;
+  top: 120px;
+  right: 400px;
+  z-index: 15;
+  width: 200px;
+  height: 400px;
+  color: $textColorDark;
+  background-color: #ccc;
+  div {
+    padding: 8px;
+    }
+  .toolbox-header {
+    background-color: #4A4A4A;
+    }
 }
